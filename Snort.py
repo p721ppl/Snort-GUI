@@ -120,7 +120,7 @@ def svExecStart():
 #            treeViewRl.insert('','end',values=(Actn,Prot,SrcIPAdd,SrcPtNo,DirOpr,DestIPAdd,DestPtNo))
 
 def readRuleFile():
-    with open('/etc/snort/rules/snort.rules', 'r') as readFile:
+    with open('/etc/snort/rules/local.rules', 'r') as readFile:
         i=1
         e=[]
         valList=[]
@@ -129,17 +129,17 @@ def readRuleFile():
             if line.startswith('alert') or line.startswith(' alert') or line.startswith('#alert') or line.startswith('# alert'):
                 subLine=re.sub('#\s*','#',line)
                 #print 'subLine:',subLine
-                splitLine=subLine.split(' ',7)[:7]
+                splitLine=subLine.split(' ',7)[:8]
                 #print 'splitLine:',splitLine
                 valList.append(splitLine)
-        for Actn,Prot,SrcIPAdd,SrcPtNo,DirOpr,DestIPAdd,DestPtNo in valList:
+        for Actn,Prot,SrcIPAdd,SrcPtNo,DirOpr,DestIPAdd,DestPtNo,msg in valList:
             #print valList
             #print Actn
             if Actn=='alert' or Actn==' alert':
                 rlStat='Enable'
             else:
                 rlStat='Disable'
-            treeViewRl.insert('','end',values=(rlStat,Actn,Prot,SrcIPAdd,SrcPtNo,DirOpr,DestIPAdd,DestPtNo))
+            treeViewRl.insert('','end',values=(rlStat,Actn,Prot,SrcIPAdd,SrcPtNo,DirOpr,DestIPAdd,DestPtNo,msg))
 
 #def readRuleFile():
     #with open('/etc/snort/rules/local.rules', 'r') as ruleFile:
@@ -633,9 +633,9 @@ shwPulledPorkVer()
 
 refreshSnortStat()
 
+readRuleFile()
+
 refreshThread = threading.Thread(target = autoRefresh)
 refreshThread.start()
-
-readRuleFile()
 
 root.mainloop()
