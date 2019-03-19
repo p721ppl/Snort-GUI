@@ -101,55 +101,89 @@ def svExecStart():
 
     if optQtOp.get()==1:
         execStart=execStart+' -q '
-
     config=ConfigParser.ConfigParser()
     config.optionxform=str
     config.read('/lib/systemd/system/snort.service')
     config.set('Service','ExecStart',execStart)
-    
-    with open('/lib/systemd/system/snort.service', 'w') as configfile:
+    with open('/lib/systemd/system/snort.service','w') as configfile:
         config.write(configfile)
-
     dReload()
-    
-#def readRuleFile():
-#    with open('/etc/snort/rules/local.rules', 'r') as readFile:
-#        e=(line.split(' ',7)[:7] for line in readFile)
-#        valArray=((val[0],val[1],val[2],val[3],val[4],val[5],val[6]) for val in e)
-#        for Actn,Prot,SrcIPAdd,SrcPtNo,DirOpr,DestIPAdd,DestPtNo in valArray:
-#            treeViewRl.insert('','end',values=(Actn,Prot,SrcIPAdd,SrcPtNo,DirOpr,DestIPAdd,DestPtNo))
 
-def readRuleFile():
-    with open('/etc/snort/rules/local.rules', 'r') as readFile:
-        i=1
+def rRlF():
+    with open('/etc/snort/rules/local.rules','r') as rF:
         e=[]
         valList=[]
-        for line in readFile:
-            #print 'line:',line
-            if line.startswith('alert') or line.startswith(' alert') or line.startswith('#alert') or line.startswith('# alert'):
-                subLine=re.sub('#\s*','#',line)
-                #print 'subLine:',subLine
-                splitLine=subLine.split(' ',7)[:8]
-                #print 'splitLine:',splitLine
-                valList.append(splitLine)
+        for line in rF:
+            line=line.lstrip()
+            line=re.sub('#\s*','#',line,count=1)
+            if line.startswith('alert') or line.startswith('#alert') or line.startswith('log') or line.startswith('#log') or line.startswith('pass') or line.startswith('#pass') or line.startswith('activate') or line.startswith('#activate') or line.startswith('dynamic') or line.startswith('#dynamic') or line.startswith('drop') or line.startswith('#drop') or line.startswith('reject') or line.startswith('#reject') or line.startswith('sdrop') or line.startswith('#sdrop'):
+                line=re.split('\s',line,maxsplit=7)[:8]
+                valList.append(line)
         for Actn,Prot,SrcIPAdd,SrcPtNo,DirOpr,DestIPAdd,DestPtNo,msg in valList:
-            #print valList
-            #print Actn
-            if Actn=='alert' or Actn==' alert':
+            if Actn=='alert' or Actn=='log' or Actn=='pass' or Actn=='activate' or Actn=='dynamic' or Actn=='drop' or Actn=='reject' or Actn=='sdrop':
                 rlStat='Enable'
-            else:
+            elif Actn=='#alert' or Actn=='#log' or Actn=='#pass' or Actn=='#activate' or Actn=='#dynamic' or Actn=='#drop' or Actn=='#reject' or Actn=='#sdrop':
                 rlStat='Disable'
+            else:
+                rlStat='Unknown'
             treeViewRl.insert('','end',values=(rlStat,Actn,Prot,SrcIPAdd,SrcPtNo,DirOpr,DestIPAdd,DestPtNo,msg))
 
-#def readRuleFile():
-    #with open('/etc/snort/rules/local.rules', 'r') as ruleFile:
-        #for line in ruleFile:
-            #e=re.split(" ?\(?msg:\"|\"?;? ?GID:|\"?;? ?sid:|\"?;? ?rev:|\"?;? ?classtype:|;\)| ",line)
-            #print e
-            #for Actn,Prot,SrcIPAdd,SrcPtNo,DirOpr,DestIPAdd,DestPtNo,msg in e:
-                #treeViewRl.insert('','end',values=(Actn,Prot,SrcIPAdd,SrcPtNo,DirOpr,DestIPAdd,DestPtNo,msg))
+def clrTreeVRl():
+    for row in treeViewRl.get_children():
+        treeViewRl.delete(row)
 
-#cat /etc/snort/rules/local.rules | grep -oE 'alert.*\(msg:\"|#d alert.*\(msg:\"|sid:[0-9]*|sid: [0-9]*|sid: [0-9]*|msg:\".*\";|rev:[0-9]*'
+def addRl():
+    clrTreeVRl()
+    with open('/etc/snort/rules/local.rules','a+') as wF:
+        nRl=['\n']
+        if actn.get() != '':
+            nRl.insert(len(nRl),actn.get())
+        if prot.get() != '':
+            nRl.insert(len(nRl),prot.get())
+        if srcIPAdd.get() != '':
+            nRl.insert(len(nRl),srcIPAdd.get())
+        if srcPtNo.get() != '':
+            nRl.insert(len(nRl),srcPtNo.get())
+        if dirOpr.get() != '':
+            nRl.insert(len(nRl),dirOpr.get())
+        if destIPAdd.get() != '':
+            nRl.insert(len(nRl),destIPAdd.get())
+        if destPtNo.get() != '':
+            nRl.insert(len(nRl),destPtNo.get())
+        if msg.get() != '' or refIdSys.get() != '' or gId.get() != '' or sId.get() != '' or rev.get() != '' or clTp.get() != '' or pri.get() != '':
+            nRl.insert(len(nRl),'(')
+        if msg.get() != '':
+            fMsg='msg:\"'+msg.get()+'\";'
+            nRl.insert(len(nRl),fMsg)
+        if refIdSys.get() != '' and refId.get() != '':
+            fRefIdSys='reference:'+refIdSys.get()+','
+            nRl.insert(len(nRl),fRefIdSys)
+            fRefId=refId.get()+';'
+            nRl.insert(len(nRl),fRefId)
+        if gId.get() != '':
+            fGId='gid:'+gId.get()+';'
+            nRl.insert(len(nRl),fGId)
+        if sId.get() != '':
+            fSId='sid:'+sId.get()+';'
+            nRl.insert(len(nRl),fSId)
+        if rev.get() != '':
+            fRev='rev:'+rev.get()+';'
+            nRl.insert(len(nRl),fRev)
+        if clTp.get() != '':
+            fClTp='classtype:'+clTp.get()+';'
+            nRl.insert(len(nRl),fClTp)
+        if pri.get() != '':
+            fPri='priority:'+pri.get()+';'
+            nRl.insert(len(nRl),fPri)
+        if msg.get() != '' or refIdSys.get() != '' or gId.get() != '' or sId.get() != '' or rev.get() != '' or clTp.get() != '' or pri.get() != '':
+            nRl.insert(len(nRl),')')
+        wF.writelines(' '.join(nRl))
+    rRlF()
+
+def treeviewClick(event):
+    for item in treeViewRl.selection():
+        item_text=treeViewRl.item(item,"values")
+        print(item_text)
 
 def shwSnortVer():
     snortVerOut=subprocess.Popen('snort -V',shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
@@ -220,6 +254,8 @@ prot=Tkinter.StringVar()
 srcIPAdd=Tkinter.StringVar()
 
 srcPtNo=Tkinter.StringVar()
+
+dirOpr=Tkinter.StringVar()
 
 destIPAdd=Tkinter.StringVar()
 
@@ -442,7 +478,7 @@ buttonSave=ttk.Button(labelFrameNetVar,text="Save",command=saveVar)
 buttonSave.grid(column=0,row=10,columnspan=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
 frameRl=ttk.Frame(noteBookMain)
-    
+
 treeViewRl=ttk.Treeview(frameRl,columns=['columnStat','columnActn','columnProt','columnSrcIPAdd','columnSrcPtNo','columnDirOpr','columnDestIPAdd','columnDestPtNo','columnMsg','columnRefIdSys',
 'columnRefId','columnGId','columnSId','columnRev','columnClTp','columnPri'],show='headings')
 treeViewRl.heading('columnStat',text='Status')
@@ -462,7 +498,7 @@ treeViewRl.column('columnDestIPAdd',width=140)
 treeViewRl.heading('columnDestPtNo',text='Destination Port Number')
 treeViewRl.column('columnDestPtNo',width=160)
 treeViewRl.heading('columnMsg',text='Message')
-treeViewRl.column('columnMsg',width=70)
+treeViewRl.column('columnMsg',width=200)
 treeViewRl.heading('columnRefIdSys',text='Reference ID System')
 treeViewRl.column('columnRefIdSys',width=130)
 treeViewRl.heading('columnRefId',text='Reference ID')
@@ -478,6 +514,7 @@ treeViewRl.column('columnClTp',width=70)
 treeViewRl.heading('columnPri',text='Priority')
 treeViewRl.column('columnPri',width=50)
 treeViewRl.grid(column=0,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E+Tkinter.W)
+treeViewRl.bind('<ButtonRelease-1>',treeviewClick)
 
 scrollbarXRl=ttk.Scrollbar(frameRl,orient='horizontal',command=treeViewRl.xview)
 scrollbarXRl.grid(column=0,row=1,sticky=Tkinter.N+Tkinter.E+Tkinter.W)
@@ -507,26 +544,38 @@ comboboxProt.grid(column=3,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.W)
 labelSrcIPAdd=ttk.Label(labelFrameED,text="Source IP Address:")
 labelSrcIPAdd.grid(column=0,row=1,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
 
-entrySrcIPAdd=ttk.Entry(labelFrameED,textvariable=srcIPAdd)
-entrySrcIPAdd.grid(column=1,row=1,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.W)
+comboboxSrcIPAdd=ttk.Combobox(labelFrameED,textvariable=srcIPAdd)
+comboboxSrcIPAdd['values']=('any','$HOME_NET','$EXTERNAL_NET','$DNS_SERVERS','$SMTP_SERVERS','$HTTP_SERVERS','$SQL_SERVERS','$TELNET_SERVERS','$SSH_SERVERS','$FTP_SERVERS','$SIP_SERVERS')
+comboboxSrcIPAdd.grid(column=1,row=1,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.W)
 
 labelSrcPtNo=ttk.Label(labelFrameED,text="Source Port Number:")
 labelSrcPtNo.grid(column=2,row=1,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
 
-entrySrcPtNo=ttk.Entry(labelFrameED,textvariable=srcPtNo)
-entrySrcPtNo.grid(column=3,row=1,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.W)
+comboboxSrcPtNo=ttk.Combobox(labelFrameED,textvariable=srcPtNo)
+comboboxSrcPtNo['values']=('any','$HTTP_PORTS','$SHELLCODE_PORTS','$ORACLE_PORTS','$SSH_PORTS','$FTP_PORTS','$SIP_PORTS','$FILE_DATA_PORTS','$GTP_PORTS')
+comboboxSrcPtNo.grid(column=3,row=1,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.W)
+
+labelDirOpr=ttk.Label(labelFrameED,text="Direction Operator:")
+labelDirOpr.grid(column=4,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
+
+comboboxDirOpr=ttk.Combobox(labelFrameED,textvariable=dirOpr)
+comboboxDirOpr['values']=('->','<>')
+comboboxDirOpr.grid(column=5,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.W)
+
 
 labelDestIPAdd=ttk.Label(labelFrameED,text="Destination IP Address:")
 labelDestIPAdd.grid(column=4,row=1,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
 
-entryDestIPAdd=ttk.Entry(labelFrameED,textvariable=destIPAdd)
-entryDestIPAdd.grid(column=5,row=1,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.W)
+comboboxDestIPAdd=ttk.Combobox(labelFrameED,textvariable=destIPAdd)
+comboboxDestIPAdd['values']=('any','$HOME_NET','$EXTERNAL_NET','$DNS_SERVERS','$SMTP_SERVERS','$HTTP_SERVERS','$SQL_SERVERS','$TELNET_SERVERS','$SSH_SERVERS','$FTP_SERVERS','$SIP_SERVERS')
+comboboxDestIPAdd.grid(column=5,row=1,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.W)
 
 labelDestPtNo=ttk.Label(labelFrameED,text="Destination Port Number:")
 labelDestPtNo.grid(column=6,row=1,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
 
-entryDestPtNo=ttk.Entry(labelFrameED,textvariable=destPtNo)
-entryDestPtNo.grid(column=7,row=1,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.W)
+comboboxDestPtNo=ttk.Combobox(labelFrameED,textvariable=destPtNo)
+comboboxDestPtNo['values']=('any','$HTTP_PORTS','$SHELLCODE_PORTS','$ORACLE_PORTS','$SSH_PORTS','$FTP_PORTS','$SIP_PORTS','$FILE_DATA_PORTS','$GTP_PORTS')
+comboboxDestPtNo.grid(column=7,row=1,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.W)
 
 separatorED=ttk.Separator(labelFrameED)
 separatorED.grid(column=0,row=2,columnspan=8,sticky=Tkinter.E+Tkinter.W)
@@ -571,14 +620,18 @@ entryRev.grid(column=3,row=4,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.W)
 labelClTp=ttk.Label(labelFrameED,text="Class Type:")
 labelClTp.grid(column=4,row=4,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
 
-entryClTp=ttk.Entry(labelFrameED,textvariable=clTp)
-entryClTp.grid(column=5,row=4,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.W)
+comboboxClTp=ttk.Combobox(labelFrameED,textvariable=clTp)
+comboboxClTp['values']=('attempted-admin','attempted-user','inappropriate-content','policy-violation','shellcode-detect','successful-admin','successful-user','trojan-activity','unsuccessful-user','web-application-attack','attempted-dos','attempted-recon','bad-unknown','default-login-attempt','denial-of-service','misc-attack','non-standard-protocol','rpc-portmap-decode','successful-dos','successful-recon-largescale','successful-recon-limited','suspicious-filename-detect','suspicious-login','system-call-detect','unusual-client-port-connection','web-application-activity','icmp-event','misc-activity','network-scan','not-suspicious','protocol-command-decode','string-detect','unknown','tcp-connection')
+comboboxClTp.grid(column=5,row=4,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.W)
 
 labelPri=ttk.Label(labelFrameED,text="Priority:")
 labelPri.grid(column=6,row=4,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
 
 entryPri=ttk.Entry(labelFrameED,textvariable=pri)
 entryPri.grid(column=7,row=4,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.W)
+
+buttonaddRl=ttk.Button(labelFrameED,text="Add rule",command=addRl)
+buttonaddRl.grid(column=0,row=5,columnspan=8,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
 frameUd=ttk.Frame(noteBookMain)
 
@@ -633,7 +686,7 @@ shwPulledPorkVer()
 
 refreshSnortStat()
 
-readRuleFile()
+rRlF()
 
 refreshThread = threading.Thread(target = autoRefresh)
 refreshThread.start()
