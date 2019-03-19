@@ -9,6 +9,13 @@ import fileinput
 import re
 import ConfigParser
 import webbrowser
+import MySQLdb
+#import PIL
+import PIL.Image
+import PIL.ImageTk
+import matplotlib.pyplot as plt
+import matplotlib.cbook as cbook
+import pandas as pd
 
 def refreshSnortIsEnad():
     snortIsEnaOut=subprocess.Popen('systemctl is-enabled snort.service',shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
@@ -207,9 +214,31 @@ def saveVar():
 def opBase():
     webbrowser.open('http://127.0.0.1/base/base_main.php')
 
+def mysql_graph():
+    connection=MySQLdb.connect(host="localhost",user="snort",passwd="MySqlSNORTpassword",db="snort")
+    cursor=connection.cursor()
+    sql="SELECT * FROM event"
+    cursor.execute(sql)
+
+    data = cursor.fetchall()
+    df = pd.DataFrame(list(data),columns=["sid","cid","signature","timestamp"])
+    w = df.sid
+    x = df.cid
+    y = df.signature
+    z = df.timestamp
+    plt.title("Signature event happen time", fontsize=24)
+    plt.scatter(w,x,y,z)
+    plt.xlabel("SID")
+    plt.ylabel("CID")
+    plt.tick_params(axis='both',which='major',labelsize=14)
+
 root=Tkinter.Tk()
 root.resizable(0,0)
 root.title('Snort GUI')
+
+mysql_graph()
+
+plt.savefig('graph.png')
 
 pwd=Tkinter.StringVar(value='John1212')
 
@@ -661,7 +690,7 @@ buttonUdRlset.grid(column=0,row=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N
 
 frameAlert=ttk.Frame(noteBookMain)
 
-labelFrameBase=ttk.Labelframe(frameAlert,text='BASE')
+labelFrameBase=ttk.Labelframe(frameAlert,text="BASE")
 labelFrameBase.grid(column=0,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
 labelBase=ttk.Label(labelFrameBase,text='BASE is the Basic Analysis and Security Engine.\nIt is based on the code from the Analysis Console for Intrusion Databases (ACID) project.\nThis application provides a web front-end to query and analyze the alerts coming from a SNORT IDS system.')
@@ -669,6 +698,14 @@ labelBase.grid(column=0,row=0,ipadx=5,ipady=5,padx=5,pady=5)
 
 buttonOpBase=ttk.Button(labelFrameBase,text="Open BASE",command=opBase)
 buttonOpBase.grid(column=0,row=1,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+
+labelFrameGraph=ttk.Labelframe(frameAlert,text="Graph")
+labelFrameGraph.grid(column=0,row=1,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+
+img=PIL.Image.open('graph.png')
+graph=PIL.ImageTk.PhotoImage(img)
+graphlabel=Tkinter.Label(labelFrameGraph,image=graph)
+graphlabel.grid(column=0,row=0,ipadx=5,ipady=5,padx=5,pady=5)
 
 noteBookMain.add(frameHome,text="Home")
 noteBookMain.add(frameSnort,text="Snort")
