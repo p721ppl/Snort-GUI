@@ -116,7 +116,7 @@ def svExecStart():
     dReload()
 
 def rRlF():
-    with open("/etc/snort/rules/snort.rules","r") as rF:
+    with open("/etc/snort/rules/local.rules","r") as rF:
         lnNo=0
         e=[]
         valLs=[]
@@ -186,6 +186,23 @@ def rRlF():
                     rlStat="Unknown"
                 treeViewRl.insert("","end",values=(lnNo,rlStat,Actn,Prot,SrcIPAdd,SrcPtNo,DirOpr,DestIPAdd,DestPtNo,msg,refIdSys,refId,gId,sId,rev,clTp,pri))
 
+def enaRl():
+    print 'seledRlLnNo:',seledRlLnanyNo
+    with open("/etc/snort/rules/local.rules","r+") as rF:
+        lnNo=0
+        for line in rF:
+            lnNo=lnNo+1
+            print 'lnNo: ',lnNo
+            print 'seledRlLnNo:',seledRlLnanyNo
+            if seledRlLnNo == lnNo:
+                rF.seek(0,0)
+                line.lstrip('#')
+                line.rstrip('#')
+                rF.write(line)
+                clrTreeVRl()
+                rRlF()
+                print 'line:',line
+
 def clrTreeVRl():
     for row in treeViewRl.get_children():
         treeViewRl.delete(row)
@@ -240,8 +257,10 @@ def addRl():
 
 def treeviewClick(event):
     for item in treeViewRl.selection():
-        item_text=treeViewRl.item(item,"values")
-        print(item_text)
+        itemLs=treeViewRl.item(item,"values")
+        seledRlLnNo=itemLs[0]
+    print seledRlLnNo
+    return seledRlLnNo
 
 def shwSnortVer():
     snortVerOut=subprocess.Popen("snort -V",shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
@@ -283,6 +302,10 @@ def mysql_graph():
     matplotlib.pyplot.xlabel("SID")
     matplotlib.pyplot.ylabel("CID")
     matplotlib.pyplot.tick_params(axis="both",which="major",labelsize=14)
+
+
+global seledRlLnNo
+seledRlLnNo = 0
 
 root=Tkinter.Tk()
 root.resizable(0,0)
@@ -609,8 +632,17 @@ scrollbarYRl.grid(column=1,row=0,sticky=Tkinter.N+Tkinter.S+Tkinter.W)
 
 treeViewRl.config(xscrollcommand=scrollbarXRl,yscrollcommand=scrollbarYRl)
 
+labelFrameRlActn=ttk.Labelframe(frameRl,text="Rule action")
+labelFrameRlActn.grid(column=0,row=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+
+buttonaddEnaRl=ttk.Button(labelFrameRlActn,text="Enable rule",command=enaRl)
+buttonaddEnaRl.grid(column=0,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+
+buttonaddDisaRl=ttk.Button(labelFrameRlActn,text="Disable rule",command=enaRl)
+buttonaddDisaRl.grid(column=1,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+
 labelFrameED=ttk.Labelframe(frameRl,text="Rule edit")
-labelFrameED.grid(column=0,row=2,ipadx=5,ipady=5,padx=5,pady=5)
+labelFrameED.grid(column=0,row=3,ipadx=5,ipady=5,padx=5,pady=5)
 
 labelActn=ttk.Label(labelFrameED,text="Action:")
 labelActn.grid(column=0,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
