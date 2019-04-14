@@ -52,7 +52,7 @@ def refreshBarnyardStat():
     stdout,stderr=barnyardStatOut.communicate()
     labelStatBarnyardStatOut.config(text=stdout)
     
-def autoRefresh():
+def refrshAllStat():
     while True:
         refreshSnortIsEnad()
         refreshSnortIsFled()
@@ -147,7 +147,7 @@ def rRlF():
             lnNo=lnNo+1
             line=line.lstrip()
             line=re.sub("#\s*","#",line,count=1)
-            if line.startswith("alert") or line.startswith("#alert") or line.startswith("log") or line.startswith("#log") or line.startswith("pass") or line.startswith("#pass") or line.startswith("activate") or line.startswith("#activate") or line.startswith("dynamic") or line.startswith("#dynamic") or line.startswith("drop") or line.startswith("#drop") or line.startswith("reject") or line.startswith("#reject") or line.startswith("sdrop") or line.startswith("#sdrop"):
+            if re.match("\s*#*\s*alert|\s*#*\s*log|\s*#*\s*pass|\s*#*\s*activate|\s*#*\s*dynamic|\s*#*\s*drop|\s*#*\s*reject|\s*#*\s*sdrop",line) != None:
                 line=re.split("\s",line,maxsplit=7)[:8]
                 Actn=line[0]
                 Prot=line[1]
@@ -156,42 +156,52 @@ def rRlF():
                 DirOpr=line[4]
                 DestIPAdd=line[5]
                 DestPtNo=line[6]
-                srchMsg=re.search('msg:\"([^";]*)\";',line[7])
-                if srchMsg:
-                    msg=srchMsg.group(1)
+                if len(line) > 7:
+                    srchMsg=re.search('msg:\"([^";]*)\";',line[7])
+                    if srchMsg:
+                        msg=srchMsg.group(1)
+                    else:
+                        msg=''
+                    srchRefIdSys=re.search('reference:([^,]*),([^;]*);',line[7])
+                    if srchRefIdSys:
+                        refIdSys=srchRefIdSys.group(1)
+                        refId=srchRefIdSys.group(2)
+                    else:
+                        refIdSys=''
+                        refId=''
+                    srchGId=re.search('gid:([^;]*);',line[7])
+                    if srchGId:
+                        gId=srchGId.group(1)
+                    else:
+                        gId=''
+                    srchSId=re.search('sid:([^;]*);',line[7])
+                    if srchSId:
+                        sId=srchSId.group(1)
+                    else:
+                        sId=''
+                    srchRev=re.search('rev:([^;]*);',line[7])
+                    if srchRev:
+                        rev=srchRev.group(1)
+                    else:
+                        rev=''
+                    srchClTp=re.search('classtype:([^;]*);',line[7])
+                    if srchClTp:
+                        clTp=srchClTp.group(1)
+                    else:
+                        clTp=''
+                    srchPri=re.search('priority:([^;]*);',line[7])
+                    if srchPri:
+                        pri=srchPri.group(1)
+                    else:
+                        pri=''
                 else:
                     msg=''
-                srchRefIdSys=re.search('reference:([^,]*),([^;]*);',line[7])
-                if srchRefIdSys:
-                    refIdSys=srchRefIdSys.group(1)
-                    refId=srchRefIdSys.group(2)
-                else:
                     refIdSys=''
                     refId=''
-                srchGId=re.search('gid:([^;]*);',line[7])
-                if srchGId:
-                    gId=srchGId.group(1)
-                else:
                     gId=''
-                srchSId=re.search('sid:([^;]*);',line[7])
-                if srchSId:
-                    sId=srchSId.group(1)
-                else:
                     sId=''
-                srchRev=re.search('rev:([^;]*);',line[7])
-                if srchRev:
-                    rev=srchRev.group(1)
-                else:
                     rev=''
-                srchClTp=re.search('classtype:([^;]*);',line[7])
-                if srchClTp:
-                    clTp=srchClTp.group(1)
-                else:
                     clTp=''
-                srchPri=re.search('priority:([^;]*);',line[7])
-                if srchPri:
-                    pri=srchPri.group(1)
-                else:
                     pri=''
                 if Actn=="alert" or Actn=="log" or Actn=="pass" or Actn=="activate" or Actn=="dynamic" or Actn=="drop" or Actn=="reject" or Actn=="sdrop":
                     rlStat="Enable"
@@ -211,7 +221,6 @@ def enaRl():
     with open(seledRlF.get(),"r+") as rF:
         readlines=rF.readlines()
         readlines[intSeledRlLnNo]=re.sub("#","",readlines[intSeledRlLnNo],count=1)
-        
     with open(seledRlF.get(),"w+") as wF:
         wF.writelines(readlines)
     reloadRl()
@@ -219,20 +228,20 @@ def enaRl():
 def disaRl():
     global seledRlLnNo
     intSeledRlLnNo=int(seledRlLnNo)-1
-    
     with open(seledRlF.get(),"r+") as rF:
         readlines=rF.readlines()
-        readlines[intSeledRlLnNo]='#'+readlines[intSeledRlLnNo]
-        
-    with open(seledRlF.get(),"w+") as wF:
-        wF.writelines(readlines)
-
-    reloadRl()
+    if re.match("\s*#+\s*",readlines[intSeledRlLnNo])!=None:
+        pass
+    else:
+        with open(seledRlF.get(),"w+") as wF:
+            readlines[intSeledRlLnNo]="#"+readlines[intSeledRlLnNo]
+            wF.writelines(readlines)
+        reloadRl()
 
 def addRl():
     clrTreeVRl()
     with open(seledRlF.get(),"a+") as wF:
-        nRl=["\n"]
+        nRl=[]
         if actn.get() != "":
             nRl.insert(len(nRl),actn.get())
         if prot.get() != "":
@@ -274,6 +283,7 @@ def addRl():
             nRl.insert(len(nRl),fPri)
         if msg.get() != "" or refIdSys.get() != "" or gId.get() != "" or sId.get() != "" or rev.get() != "" or clTp.get() != "" or pri.get() != "":
             nRl.insert(len(nRl),")")
+        wF.writelines("\n")
         wF.writelines(" ".join(nRl))
     rRlF()
 
@@ -331,6 +341,240 @@ def shwPulledPorkVer():
     stdout,stderr=verO.communicate()
     labelFramePulledPorkInfoOut.config(text=stdout)
 
+def aRlTLvl():
+    ToplevelaRl=Tkinter.Toplevel()
+    ToplevelaRl.title("Rule adding - Snort IDS GUI")
+    ToplevelaRl.resizable(False,False)
+    ToplevelaRl.attributes("-topmost",1) 
+    
+    labelFrameARl=ttk.Labelframe(ToplevelaRl,text="Rule adding")
+    labelFrameARl.grid(column=0,row=3,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+    
+    labelActn=ttk.Label(labelFrameARl,text="Action:")
+    labelActn.grid(column=0,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
+    
+    comboboxActn=ttk.Combobox(labelFrameARl,textvariable=actn)
+    comboboxActn["values"]=("alert","log","pass","activate","dynamic","drop","reject","sdrop")
+    comboboxActn.grid(column=1,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.W)
+    
+    labelProt=ttk.Label(labelFrameARl,text="Protocol:")
+    labelProt.grid(column=0,row=1,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
+    
+    comboboxProt=ttk.Combobox(labelFrameARl,textvariable=prot)
+    comboboxProt["values"]=("tcp","icmp","udp","ip")
+    comboboxProt.grid(column=1,row=1,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.W)
+    
+    labelSrcIPAdd=ttk.Label(labelFrameARl,text="Source IP Address:")
+    labelSrcIPAdd.grid(column=0,row=3,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
+    
+    comboboxSrcIPAdd=ttk.Combobox(labelFrameARl,textvariable=srcIPAdd)
+    comboboxSrcIPAdd["values"]=("any","$HOME_NET","$EXTERNAL_NET","$DNS_SERVERS","$SMTP_SERVERS","$HTTP_SERVERS","$SQL_SERVERS","$TELNET_SERVERS","$SSH_SERVERS","$FTP_SERVERS","$SIP_SERVERS")
+    comboboxSrcIPAdd.grid(column=1,row=3,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.W)
+    
+    labelSrcPtNo=ttk.Label(labelFrameARl,text="Source Port Number:")
+    labelSrcPtNo.grid(column=0,row=4,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
+    
+    comboboxSrcPtNo=ttk.Combobox(labelFrameARl,textvariable=srcPtNo)
+    comboboxSrcPtNo["values"]=("any","$HTTP_PORTS","$SHELLCODE_PORTS","$ORACLE_PORTS","$SSH_PORTS","$FTP_PORTS","$SIP_PORTS","$FILE_DATA_PORTS","$GTP_PORTS")
+    comboboxSrcPtNo.grid(column=1,row=4,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.W)
+    
+    labelDirOpr=ttk.Label(labelFrameARl,text="Direction Operator:")
+    labelDirOpr.grid(column=0,row=5,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
+    
+    comboboxDirOpr=ttk.Combobox(labelFrameARl,textvariable=dirOpr)
+    comboboxDirOpr["values"]=("->","<>")
+    comboboxDirOpr.grid(column=1,row=5,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.W)
+    
+    labelDestIPAdd=ttk.Label(labelFrameARl,text="Destination IP Address:")
+    labelDestIPAdd.grid(column=0,row=6,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
+    
+    comboboxDestIPAdd=ttk.Combobox(labelFrameARl,textvariable=destIPAdd)
+    comboboxDestIPAdd["values"]=("any","$HOME_NET","$EXTERNAL_NET","$DNS_SERVERS","$SMTP_SERVERS","$HTTP_SERVERS","$SQL_SERVERS","$TELNET_SERVERS","$SSH_SERVERS","$FTP_SERVERS","$SIP_SERVERS")
+    comboboxDestIPAdd.grid(column=1,row=6,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.W)
+    
+    labelDestPtNo=ttk.Label(labelFrameARl,text="Destination Port Number:")
+    labelDestPtNo.grid(column=0,row=7,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
+    
+    comboboxDestPtNo=ttk.Combobox(labelFrameARl,textvariable=destPtNo)
+    comboboxDestPtNo["values"]=("any","$HTTP_PORTS","$SHELLCODE_PORTS","$ORACLE_PORTS","$SSH_PORTS","$FTP_PORTS","$SIP_PORTS","$FILE_DATA_PORTS","$GTP_PORTS")
+    comboboxDestPtNo.grid(column=1,row=7,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.W)
+
+    separatorED=ttk.Separator(labelFrameARl)
+    separatorED.grid(column=0,row=8,columnspan=2,sticky=Tkinter.E+Tkinter.W)
+    
+    labelMsg=ttk.Label(labelFrameARl,text="Message:")
+    labelMsg.grid(column=0,row=9,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
+    
+    entryMsg=ttk.Entry(labelFrameARl,textvariable=msg)
+    entryMsg.grid(column=1,row=9,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.W)
+    
+    labelRefIdSys=ttk.Label(labelFrameARl,text="Reference ID System:")
+    labelRefIdSys.grid(column=0,row=10,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
+    
+    comboboxRefIdSys=ttk.Combobox(labelFrameARl,textvariable=refIdSys)
+    comboboxRefIdSys["values"]=("bugtraq","cve","nessus","arachnids","mcafee","osvdb","msb","url")
+    comboboxRefIdSys.grid(column=1,row=10,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.W)
+    
+    labelRefId=ttk.Label(labelFrameARl,text="Reference ID:")
+    labelRefId.grid(column=0,row=11,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
+    
+    entryRefId=ttk.Entry(labelFrameARl,textvariable=refId)
+    entryRefId.grid(column=1,row=11,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.W)
+    
+    labelGId=ttk.Label(labelFrameARl,text="GID:")
+    labelGId.grid(column=0,row=12,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
+    
+    entryGId=ttk.Entry(labelFrameARl,textvariable=gId)
+    entryGId.grid(column=1,row=12,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.W)
+    
+    labelSId=ttk.Label(labelFrameARl,text="SID:")
+    labelSId.grid(column=0,row=13,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
+    
+    entrySId=ttk.Entry(labelFrameARl,textvariable=sId)
+    entrySId.grid(column=1,row=13,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.W)
+    
+    labelRev=ttk.Label(labelFrameARl,text="Revision:")
+    labelRev.grid(column=0,row=14,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
+    
+    entryRev=ttk.Entry(labelFrameARl,textvariable=rev)
+    entryRev.grid(column=1,row=14,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.W)
+    
+    labelClTp=ttk.Label(labelFrameARl,text="Class Type:")
+    labelClTp.grid(column=0,row=15,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
+    
+    comboboxClTp=ttk.Combobox(labelFrameARl,textvariable=clTp)
+    comboboxClTp["values"]=("attempted-admin","attempted-user","inappropriate-content","policy-violation","shellcode-detect","successful-admin","successful-user","trojan-activity","unsuccessful-user","web-application-attack","attempted-dos","attempted-recon","bad-unknown","default-login-attempt","denial-of-service","misc-attack","non-standard-protocol","rpc-portmap-decode","successful-dos","successful-recon-largescale","successful-recon-limited","suspicious-filename-detect","suspicious-login","system-call-detect","unusual-client-port-connection","web-application-activity","icmp-event","misc-activity","network-scan","not-suspicious","protocol-command-decode","string-detect","unknown","tcp-connection")
+    comboboxClTp.grid(column=1,row=15,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.W)
+    
+    labelPri=ttk.Label(labelFrameARl,text="Priority:")
+    labelPri.grid(column=0,row=16,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
+
+    entryPri=ttk.Entry(labelFrameARl,textvariable=pri)
+    entryPri.grid(column=1,row=16,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.W)
+
+    separatorED=ttk.Separator(labelFrameARl)
+    separatorED.grid(column=0,row=17,columnspan=2,sticky=Tkinter.E+Tkinter.W)
+
+    buttonaddRl=ttk.Button(labelFrameARl,text="Add rule",command=addRl)
+    buttonaddRl.grid(column=0,row=18,columnspan=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+
+def edRlTLvl():
+    ToplevelaRl=Tkinter.Toplevel()
+    ToplevelaRl.title("Rule editing - Snort IDS GUI")
+    ToplevelaRl.resizable(False,False)
+    ToplevelaRl.attributes("-topmost",1) 
+    
+    labelFrameEdRl=ttk.Labelframe(ToplevelaRl,text="Rule editing")
+    labelFrameEdRl.grid(column=0,row=3,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+    
+    labelEdActn=ttk.Label(labelFrameEdRl,text="Action:")
+    labelEdActn.grid(column=0,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
+    
+    comboboxEdActn=ttk.Combobox(labelFrameEdRl,textvariable=actn)
+    comboboxEdActn["values"]=("alert","log","pass","activate","dynamic","drop","reject","sdrop")
+    comboboxEdActn.grid(column=1,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.W)
+    
+    labelEdProt=ttk.Label(labelFrameEdRl,text="Protocol:")
+    labelEdProt.grid(column=0,row=1,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
+    
+    comboboxEdProt=ttk.Combobox(labelFrameEdRl,textvariable=prot)
+    comboboxEdProt["values"]=("tcp","icmp","udp","ip")
+    comboboxEdProt.grid(column=1,row=1,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.W)
+    
+    labelEdSrcIPAdd=ttk.Label(labelFrameEdRl,text="Source IP Address:")
+    labelEdSrcIPAdd.grid(column=0,row=3,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
+    
+    comboboxEdSrcIPAdd=ttk.Combobox(labelFrameEdRl,textvariable=srcIPAdd)
+    comboboxEdSrcIPAdd["values"]=("any","$HOME_NET","$EXTERNAL_NET","$DNS_SERVERS","$SMTP_SERVERS","$HTTP_SERVERS","$SQL_SERVERS","$TELNET_SERVERS","$SSH_SERVERS","$FTP_SERVERS","$SIP_SERVERS")
+    comboboxEdSrcIPAdd.grid(column=1,row=3,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.W)
+    
+    labelEdSrcPtNo=ttk.Label(labelFrameEdRl,text="Source Port Number:")
+    labelEdSrcPtNo.grid(column=0,row=4,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
+    
+    comboboxEdSrcPtNo=ttk.Combobox(labelFrameEdRl,textvariable=srcPtNo)
+    comboboxEdSrcPtNo["values"]=("any","$HTTP_PORTS","$SHELLCODE_PORTS","$ORACLE_PORTS","$SSH_PORTS","$FTP_PORTS","$SIP_PORTS","$FILE_DATA_PORTS","$GTP_PORTS")
+    comboboxEdSrcPtNo.grid(column=1,row=4,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.W)
+    
+    labelEdDirOpr=ttk.Label(labelFrameEdRl,text="Direction Operator:")
+    labelEdDirOpr.grid(column=0,row=5,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
+    
+    comboboxEdDirOpr=ttk.Combobox(labelFrameEdRl,textvariable=dirOpr)
+    comboboxEdDirOpr["values"]=("->","<>")
+    comboboxEdDirOpr.grid(column=1,row=5,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.W)
+    
+    labelEdDestIPAdd=ttk.Label(labelFrameEdRl,text="Destination IP Address:")
+    labelEdDestIPAdd.grid(column=0,row=6,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
+    
+    comboboxEdDestIPAdd=ttk.Combobox(labelFrameEdRl,textvariable=destIPAdd)
+    comboboxEdDestIPAdd["values"]=("any","$HOME_NET","$EXTERNAL_NET","$DNS_SERVERS","$SMTP_SERVERS","$HTTP_SERVERS","$SQL_SERVERS","$TELNET_SERVERS","$SSH_SERVERS","$FTP_SERVERS","$SIP_SERVERS")
+    comboboxEdDestIPAdd.grid(column=1,row=6,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.W)
+    
+    labelDestPtNo=ttk.Label(labelFrameEdRl,text="Destination Port Number:")
+    labelDestPtNo.grid(column=0,row=7,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
+    
+    comboboxEdDestPtNo=ttk.Combobox(labelFrameEdRl,textvariable=destPtNo)
+    comboboxEdDestPtNo["values"]=("any","$HTTP_PORTS","$SHELLCODE_PORTS","$ORACLE_PORTS","$SSH_PORTS","$FTP_PORTS","$SIP_PORTS","$FILE_DATA_PORTS","$GTP_PORTS")
+    comboboxEdDestPtNo.grid(column=1,row=7,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.W)
+
+    separatorEd=ttk.Separator(labelFrameEdRl)
+    separatorEd.grid(column=0,row=8,columnspan=2,sticky=Tkinter.E+Tkinter.W)
+    
+    labelEdMsg=ttk.Label(labelFrameEdRl,text="Message:")
+    labelEdMsg.grid(column=0,row=9,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
+    
+    entryEdMsg=ttk.Entry(labelFrameEdRl,textvariable=msg)
+    entryEdMsg.grid(column=1,row=9,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.W)
+    
+    labelEdRefIdSys=ttk.Label(labelFrameEdRl,text="Reference ID System:")
+    labelEdRefIdSys.grid(column=0,row=10,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
+    
+    comboboxEdRefIdSys=ttk.Combobox(labelFrameEdRl,textvariable=refIdSys)
+    comboboxEdRefIdSys["values"]=("bugtraq","cve","nessus","arachnids","mcafee","osvdb","msb","url")
+    comboboxEdRefIdSys.grid(column=1,row=10,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.W)
+    
+    labelEdRefId=ttk.Label(labelFrameEdRl,text="Reference ID:")
+    labelEdRefId.grid(column=0,row=11,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
+    
+    entryEdRefId=ttk.Entry(labelFrameEdRl,textvariable=refId)
+    entryEdRefId.grid(column=1,row=11,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.W)
+    
+    labelEdGId=ttk.Label(labelFrameEdRl,text="GID:")
+    labelEdGId.grid(column=0,row=12,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
+    
+    entryEdGId=ttk.Entry(labelFrameEdRl,textvariable=gId)
+    entryEdGId.grid(column=1,row=12,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.W)
+    
+    labelEdSId=ttk.Label(labelFrameEdRl,text="SID:")
+    labelEdSId.grid(column=0,row=13,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
+    
+    entryEdSId=ttk.Entry(labelFrameEdRl,textvariable=sId)
+    entryEdSId.grid(column=1,row=13,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.W)
+    
+    labelEdRev=ttk.Label(labelFrameEdRl,text="Revision:")
+    labelEdRev.grid(column=0,row=14,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
+    
+    entryEdRev=ttk.Entry(labelFrameEdRl,textvariable=rev)
+    entryEdRev.grid(column=1,row=14,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.W)
+    
+    labelEdClTp=ttk.Label(labelFrameEdRl,text="Class Type:")
+    labelEdClTp.grid(column=0,row=15,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
+    
+    comboboxEdClTp=ttk.Combobox(labelFrameEdRl,textvariable=clTp)
+    comboboxEdClTp["values"]=("attempted-admin","attempted-user","inappropriate-content","policy-violation","shellcode-detect","successful-admin","successful-user","trojan-activity","unsuccessful-user","web-application-attack","attempted-dos","attempted-recon","bad-unknown","default-login-attempt","denial-of-service","misc-attack","non-standard-protocol","rpc-portmap-decode","successful-dos","successful-recon-largescale","successful-recon-limited","suspicious-filename-detect","suspicious-login","system-call-detect","unusual-client-port-connection","web-application-activity","icmp-event","misc-activity","network-scan","not-suspicious","protocol-command-decode","string-detect","unknown","tcp-connection")
+    comboboxEdClTp.grid(column=1,row=15,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.W)
+    
+    labelEdPri=ttk.Label(labelFrameEdRl,text="Priority:")
+    labelEdPri.grid(column=0,row=16,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
+
+    entryEdPri=ttk.Entry(labelFrameEdRl,textvariable=pri)
+    entryEdPri.grid(column=1,row=16,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.W)
+
+    separatorEd=ttk.Separator(labelFrameEdRl)
+    separatorEd.grid(column=0,row=17,columnspan=2,sticky=Tkinter.E+Tkinter.W)
+
+    buttonEdRl=ttk.Button(labelFrameEdRl,text="Edit rule")
+    buttonEdRl.grid(column=0,row=18,columnspan=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+
 root=Tkinter.Tk()
 root.resizable(0,0)
 root.title("Snort Intrusion Detection System Graphical User Interface")
@@ -373,7 +617,7 @@ FTPS=Tkinter.StringVar(value="$HOME_NET")
 
 SIPS=Tkinter.StringVar(value="$HOME_NET")
 
-seledRlF=Tkinter.StringVar(value="/etc/snort/rules/snort.rules")
+seledRlF=Tkinter.StringVar(value="/etc/snort/rules/test.rules")
 
 rlStat=Tkinter.StringVar()
 
@@ -410,7 +654,7 @@ clTp=Tkinter.StringVar()
 pri=Tkinter.StringVar()
 
 noteBookMain=ttk.Notebook(root)
-noteBookMain.grid(column=0,row=0,ipadx=5,ipady=5,padx=5,pady=5)
+noteBookMain.grid(column=0,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
 frameSnort=ttk.Frame(noteBookMain)
 
@@ -539,8 +783,8 @@ separatorSecBarnyardStat.grid(column=0,row=6,columnspan=2,sticky=Tkinter.E+Tkint
 labelStatBarnyardStatOut=ttk.Label(labelFrameBarnyardStat)
 labelStatBarnyardStatOut.grid(column=0,row=7,columnspan=2,ipadx=5,ipady=5,padx=5,pady=5)
 
-
 frameCfg=ttk.Frame(noteBookMain)
+frameCfg.grid(column=0,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
 labelFrameNetVar=ttk.Labelframe(frameCfg,text="Network variable")
 labelFrameNetVar.grid(column=0,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
@@ -623,18 +867,18 @@ comboboxRlF.grid(column=1,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.W)
 buttonAskRlF=ttk.Button(labelFrameRlFSelion,text="Browse",command=askRlFLoc)
 buttonAskRlF.grid(column=2,row=0,ipadx=5,ipady=5,padx=5,pady=5)
 
-buttonReloadRl=ttk.Button(labelFrameRlFSelion,text="Reload",command=reloadRl)
-buttonReloadRl.grid(column=0,row=1,columnspan=3,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+buttonReloadRlF=ttk.Button(labelFrameRlFSelion,text="Reload file",command=reloadRl)
+buttonReloadRlF.grid(column=0,row=1,columnspan=3,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
 labelFrameSeledFsRl=ttk.Labelframe(frameRl,text="Selected file's rule")
 labelFrameSeledFsRl.grid(column=0,row=1,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
 treeViewRl=ttk.Treeview(labelFrameSeledFsRl,columns=["columnLnNo","columnStat","columnActn","columnProt","columnSrcIPAdd","columnSrcPtNo","columnDirOpr","columnDestIPAdd","columnDestPtNo","columnMsg","columnRefIdSys",
-"columnRefId","columnGId","columnSId","columnRev","columnClTp","columnPri"],show="headings")
+"columnRefId","columnGId","columnSId","columnRev","columnClTp","columnPri"],selectmode="browse",show="headings")
 treeViewRl.heading("columnLnNo",text="Line")
 treeViewRl.column("columnLnNo",width=50)
 treeViewRl.heading("columnStat",text="Status")
-treeViewRl.column("columnStat",width=50)
+treeViewRl.column("columnStat",width=70)
 treeViewRl.heading("columnActn",text="Action")
 treeViewRl.column("columnActn",width=50)
 treeViewRl.heading("columnProt",text="Prot")
@@ -650,11 +894,11 @@ treeViewRl.column("columnDestIPAdd",width=110)
 treeViewRl.heading("columnDestPtNo",text="Dest Port")
 treeViewRl.column("columnDestPtNo",width=120)
 treeViewRl.heading("columnMsg",text="Message")
-treeViewRl.column("columnMsg",width=200)
+treeViewRl.column("columnMsg",width=170)
 treeViewRl.heading("columnRefIdSys",text="RefSys")
 treeViewRl.column("columnRefIdSys",width=60)
 treeViewRl.heading("columnRefId",text="Reference ID")
-treeViewRl.column("columnRefId",width=200)
+treeViewRl.column("columnRefId",width=170)
 treeViewRl.heading("columnGId",text="GID")
 treeViewRl.column("columnGId",width=30)
 treeViewRl.heading("columnSId",text="SID")
@@ -665,134 +909,34 @@ treeViewRl.heading("columnClTp",text="Class Type")
 treeViewRl.column("columnClTp",width=170)
 treeViewRl.heading("columnPri",text="Pri")
 treeViewRl.column("columnPri",width=30)
-treeViewRl.grid(column=0,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E+Tkinter.W)
+treeViewRl.grid(column=0,row=0,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 treeViewRl.bind("<ButtonRelease-1>",treeviewClick)
 
 scrollbarXRl=ttk.Scrollbar(labelFrameSeledFsRl,orient="horizontal",command=treeViewRl.xview)
-scrollbarXRl.grid(column=0,row=1,sticky=Tkinter.N+Tkinter.E+Tkinter.W)
+scrollbarXRl.grid(column=0,row=1,sticky=Tkinter.E+Tkinter.W)
 
 scrollbarYRl=ttk.Scrollbar(labelFrameSeledFsRl,command=treeViewRl.yview)
-scrollbarYRl.grid(column=1,row=0,sticky=Tkinter.N+Tkinter.S+Tkinter.W)
+scrollbarYRl.grid(column=1,row=0,sticky=Tkinter.N+Tkinter.S)
 
-treeViewRl.config(xscrollcommand=scrollbarXRl,yscrollcommand=scrollbarYRl)
+treeViewRl.config(xscrollcommand=scrollbarXRl.set,yscrollcommand=scrollbarYRl.set)
 
 labelFrameRlActn=ttk.Labelframe(frameRl,text="Rule action")
 labelFrameRlActn.grid(column=0,row=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
+buttonARl=ttk.Button(labelFrameRlActn,text="Add rule",command=aRlTLvl)
+buttonARl.grid(column=0,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+
+buttonEdRl=ttk.Button(labelFrameRlActn,text="Edit rule",command=edRlTLvl)
+buttonEdRl.grid(column=1,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+
+separatorRlActn=ttk.Separator(labelFrameRlActn,orient="vertical")
+separatorRlActn.grid(column=2,row=0,sticky=Tkinter.N+Tkinter.S)
+
 buttonEnaRl=ttk.Button(labelFrameRlActn,text="Enable rule",command=enaRl)
-buttonEnaRl.grid(column=0,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+buttonEnaRl.grid(column=3,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
 buttonDisaRl=ttk.Button(labelFrameRlActn,text="Disable rule",command=disaRl)
-buttonDisaRl.grid(column=1,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
-
-labelFrameED=ttk.Labelframe(frameRl,text="Rule edit")
-labelFrameED.grid(column=0,row=3,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
-
-labelActn=ttk.Label(labelFrameED,text="Action:")
-labelActn.grid(column=0,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
-
-comboboxActn=ttk.Combobox(labelFrameED,textvariable=actn)
-comboboxActn["values"]=("alert","log","pass","activate","dynamic","drop","reject","sdrop")
-comboboxActn.grid(column=1,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.W)
-
-labelProt=ttk.Label(labelFrameED,text="Protocol:")
-labelProt.grid(column=2,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
-
-comboboxProt=ttk.Combobox(labelFrameED,textvariable=prot)
-comboboxProt["values"]=("tcp","icmp","udp","ip")
-comboboxProt.grid(column=3,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.W)
-
-labelSrcIPAdd=ttk.Label(labelFrameED,text="Source IP Address:")
-labelSrcIPAdd.grid(column=0,row=1,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
-
-comboboxSrcIPAdd=ttk.Combobox(labelFrameED,textvariable=srcIPAdd)
-comboboxSrcIPAdd["values"]=("any","$HOME_NET","$EXTERNAL_NET","$DNS_SERVERS","$SMTP_SERVERS","$HTTP_SERVERS","$SQL_SERVERS","$TELNET_SERVERS","$SSH_SERVERS","$FTP_SERVERS","$SIP_SERVERS")
-comboboxSrcIPAdd.grid(column=1,row=1,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.W)
-
-labelSrcPtNo=ttk.Label(labelFrameED,text="Source Port Number:")
-labelSrcPtNo.grid(column=2,row=1,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
-
-comboboxSrcPtNo=ttk.Combobox(labelFrameED,textvariable=srcPtNo)
-comboboxSrcPtNo["values"]=("any","$HTTP_PORTS","$SHELLCODE_PORTS","$ORACLE_PORTS","$SSH_PORTS","$FTP_PORTS","$SIP_PORTS","$FILE_DATA_PORTS","$GTP_PORTS")
-comboboxSrcPtNo.grid(column=3,row=1,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.W)
-
-labelDirOpr=ttk.Label(labelFrameED,text="Direction Operator:")
-labelDirOpr.grid(column=4,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
-
-comboboxDirOpr=ttk.Combobox(labelFrameED,textvariable=dirOpr)
-comboboxDirOpr["values"]=("->","<>")
-comboboxDirOpr.grid(column=5,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.W)
-
-
-labelDestIPAdd=ttk.Label(labelFrameED,text="Destination IP Address:")
-labelDestIPAdd.grid(column=4,row=1,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
-
-comboboxDestIPAdd=ttk.Combobox(labelFrameED,textvariable=destIPAdd)
-comboboxDestIPAdd["values"]=("any","$HOME_NET","$EXTERNAL_NET","$DNS_SERVERS","$SMTP_SERVERS","$HTTP_SERVERS","$SQL_SERVERS","$TELNET_SERVERS","$SSH_SERVERS","$FTP_SERVERS","$SIP_SERVERS")
-comboboxDestIPAdd.grid(column=5,row=1,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.W)
-
-labelDestPtNo=ttk.Label(labelFrameED,text="Destination Port Number:")
-labelDestPtNo.grid(column=6,row=1,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
-
-comboboxDestPtNo=ttk.Combobox(labelFrameED,textvariable=destPtNo)
-comboboxDestPtNo["values"]=("any","$HTTP_PORTS","$SHELLCODE_PORTS","$ORACLE_PORTS","$SSH_PORTS","$FTP_PORTS","$SIP_PORTS","$FILE_DATA_PORTS","$GTP_PORTS")
-comboboxDestPtNo.grid(column=7,row=1,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.W)
-
-separatorED=ttk.Separator(labelFrameED)
-separatorED.grid(column=0,row=2,columnspan=8,sticky=Tkinter.E+Tkinter.W)
-
-labelMsg=ttk.Label(labelFrameED,text="Message:")
-labelMsg.grid(column=0,row=3,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
-
-entryMsg=ttk.Entry(labelFrameED,textvariable=msg)
-entryMsg.grid(column=1,row=3,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.W)
-
-labelRefIdSys=ttk.Label(labelFrameED,text="Reference ID System:")
-labelRefIdSys.grid(column=2,row=3,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
-
-comboboxRefIdSys=ttk.Combobox(labelFrameED,textvariable=refIdSys)
-comboboxRefIdSys["values"]=("bugtraq","cve","nessus","arachnids","mcafee","osvdb","msb","url")
-comboboxRefIdSys.grid(column=3,row=3,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.W)
-
-labelRefId=ttk.Label(labelFrameED,text="Reference ID:")
-labelRefId.grid(column=4,row=3,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
-
-entryRefId=ttk.Entry(labelFrameED,textvariable=refId)
-entryRefId.grid(column=5,row=3,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.W)
-
-labelGId=ttk.Label(labelFrameED,text="GID:")
-labelGId.grid(column=6,row=3,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
-
-entryGId=ttk.Entry(labelFrameED,textvariable=gId)
-entryGId.grid(column=7,row=3,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.W)
-
-labelSId=ttk.Label(labelFrameED,text="SID:")
-labelSId.grid(column=0,row=4,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
-
-entrySId=ttk.Entry(labelFrameED,textvariable=sId)
-entrySId.grid(column=1,row=4,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.W)
-
-labelRev=ttk.Label(labelFrameED,text="Revision:")
-labelRev.grid(column=2,row=4,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
-
-entryRev=ttk.Entry(labelFrameED,textvariable=rev)
-entryRev.grid(column=3,row=4,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.W)
-
-labelClTp=ttk.Label(labelFrameED,text="Class Type:")
-labelClTp.grid(column=4,row=4,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
-
-comboboxClTp=ttk.Combobox(labelFrameED,textvariable=clTp)
-comboboxClTp["values"]=("attempted-admin","attempted-user","inappropriate-content","policy-violation","shellcode-detect","successful-admin","successful-user","trojan-activity","unsuccessful-user","web-application-attack","attempted-dos","attempted-recon","bad-unknown","default-login-attempt","denial-of-service","misc-attack","non-standard-protocol","rpc-portmap-decode","successful-dos","successful-recon-largescale","successful-recon-limited","suspicious-filename-detect","suspicious-login","system-call-detect","unusual-client-port-connection","web-application-activity","icmp-event","misc-activity","network-scan","not-suspicious","protocol-command-decode","string-detect","unknown","tcp-connection")
-comboboxClTp.grid(column=5,row=4,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.W)
-
-labelPri=ttk.Label(labelFrameED,text="Priority:")
-labelPri.grid(column=6,row=4,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
-
-entryPri=ttk.Entry(labelFrameED,textvariable=pri)
-entryPri.grid(column=7,row=4,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.W)
-
-buttonaddRl=ttk.Button(labelFrameED,text="Add rule",command=addRl)
-buttonaddRl.grid(column=0,row=5,columnspan=8,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+buttonDisaRl.grid(column=4,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
 frameUd=ttk.Frame(noteBookMain)
 
@@ -807,7 +951,7 @@ buttonUdRlset.grid(column=0,row=1,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N
 
 frameAlert=ttk.Frame(noteBookMain)
 
-treeviewAlert=ttk.Treeview(frameAlert,columns=["sid","cid","signature","sig_name","sig_class_id","sig_priority","timestamp","ip_src","ip_dst","ip_proto","layer4_sport","layer4_dport"],show="headings")
+treeviewAlert=ttk.Treeview(frameAlert,columns=["sid","cid","signature","sig_name","sig_class_id","sig_priority","timestamp","ip_src","ip_dst","ip_proto","layer4_sport","layer4_dport"],selectmode="browse",show="headings")
 treeviewAlert.heading("sid",text="SID")
 treeviewAlert.column("sid",width=30)
 treeviewAlert.heading("cid",text="CID")
@@ -832,7 +976,15 @@ treeviewAlert.heading("layer4_sport",text="SrcPt")
 treeviewAlert.column("layer4_sport",width=50)
 treeviewAlert.heading("layer4_dport",text="DestPt")
 treeviewAlert.column("layer4_dport",width=50)
-treeviewAlert.grid(column=0,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E+Tkinter.W)
+treeviewAlert.grid(column=0,row=0,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+
+scrollbarXAlert=ttk.Scrollbar(frameAlert,orient="horizontal",command=treeviewAlert.xview)
+scrollbarXAlert.grid(column=0,row=1,sticky=Tkinter.E+Tkinter.W)
+
+scrollbarYAlert=ttk.Scrollbar(frameAlert,command=treeviewAlert.yview)
+scrollbarYAlert.grid(column=1,row=0,sticky=Tkinter.N+Tkinter.S)
+
+treeviewAlert.configure(xscrollcommand=scrollbarXAlert.set,yscrollcommand=scrollbarYAlert.set)
 
 frameGraph=ttk.Frame(noteBookMain)
 
@@ -889,6 +1041,7 @@ shwPulledPorkVer()
 refreshSnortStat()
 rRlF()
 
-refreshThread=threading.Thread(target=autoRefresh)
+refreshThread=threading.Thread(target=refrshAllStat)
 refreshThread.start()
+
 root.mainloop()
