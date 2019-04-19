@@ -23,32 +23,32 @@ global seledRlLnNo
 seledRlLnNo=0
 
 def refreshSnortIsEnad():
-    snortIsEnaOut=subprocess.Popen("systemctl is-enabled snort.service",shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+    snortIsEnaOut=subprocess.Popen("systemctl is-enabled snort.service",shell=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
     stdout,stderr=snortIsEnaOut.communicate()
-    labelStatSnortIsEnaOut.config(text=stdout)
+    labelStatSnortIsEnaOut.config(text=re.sub("\n","",stdout))
 
 def refreshSnortIsFled():
-    snortIsFledOut=subprocess.Popen("systemctl is-failed snort.service",shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+    snortIsFledOut=subprocess.Popen("systemctl is-failed snort.service",shell=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
     stdout,stderr=snortIsFledOut.communicate()
-    labelStatSnortIsFledOut.config(text=stdout)
+    labelStatSnortIsFledOut.config(text=re.sub("\n","",stdout))
 
 def refreshBarnyardIsEnad():
-    barnyardIsEnaOut=subprocess.Popen("systemctl is-enabled barnyard2.service",shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+    barnyardIsEnaOut=subprocess.Popen("systemctl is-enabled barnyard2.service",shell=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
     stdout,stderr=barnyardIsEnaOut.communicate()
-    labelStatBarnyardIsEnaOut.config(text=stdout)
+    labelStatBarnyardIsEnaOut.config(text=re.sub("\n","",stdout))
     
 def refreshBarnyardIsFled():
-    barnyardIsFledOut=subprocess.Popen("systemctl is-failed barnyard2.service",shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+    barnyardIsFledOut=subprocess.Popen("systemctl is-failed barnyard2.service",shell=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
     stdout,stderr=barnyardIsFledOut.communicate()
-    labelStatBarnyardIsFledOut.config(text=stdout)
+    labelStatBarnyardIsFledOut.config(text=re.sub("\n","",stdout))
 
 def refreshSnortStat():
-    snortStatOut=subprocess.Popen("systemctl status snort.service",shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+    snortStatOut=subprocess.Popen("systemctl status snort.service",shell=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
     stdout,stderr=snortStatOut.communicate()
     labelStatSnortStatOut.config(text=stdout)
 
 def refreshBarnyardStat():
-    barnyardStatOut=subprocess.Popen("systemctl status barnyard2.service",shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+    barnyardStatOut=subprocess.Popen("systemctl status barnyard2.service",shell=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
     stdout,stderr=barnyardStatOut.communicate()
     labelStatBarnyardStatOut.config(text=stdout)
     
@@ -63,40 +63,34 @@ def refrshAllStat():
         time.sleep(1)
 
 def snortEnaSvc():
-    subprocess.Popen("echo "+sudoPwd.get()+" | "+"sudo -S systemctl enable snort.service",shell=True)
+    subprocess.Popen("sudo systemctl enable snort.service",shell=True)
     
 def snortDisaSvc():
-    subprocess.Popen("echo "+sudoPwd.get()+" | "+"sudo -S systemctl disable snort.service",shell=True)
+    subprocess.Popen("sudo systemctl disable snort.service",shell=True)
 
 def snortStrtSvc():
-    subprocess.Popen("echo "+sudoPwd.get()+" | "+"sudo -S systemctl start snort.service",shell=True)
+    subprocess.Popen("sudo systemctl start snort.service",shell=True)
     
 def snortStSvc():
-    subprocess.Popen("echo "+sudoPwd.get()+" | "+"sudo -S systemctl stop snort.service",shell=True)
+    subprocess.Popen("sudo systemctl stop snort.service",shell=True)
 
 def barnyardEnaSvc():
-    subprocess.Popen("echo "+sudoPwd.get()+" | "+"sudo -S systemctl enable barnyard2.service",shell=True)
+    subprocess.Popen("sudo systemctl enable barnyard2.service",shell=True)
     
 def barnyardDisaSvc():
-    subprocess.Popen("echo "+sudoPwd.get()+" | "+"sudo -S systemctl disable barnyard2.service",shell=True)
+    subprocess.Popen("sudo systemctl disable barnyard2.service",shell=True)
 
 def barnyardStrtSvc():
-    subprocess.Popen("echo "+sudoPwd.get()+" | "+"sudo -S systemctl start barnyard2.service",shell=True)
+    subprocess.Popen("sudo systemctl start barnyard2.service",shell=True)
     
 def barnyardStSvc():
-    subprocess.Popen("echo "+sudoPwd.get()+" | "+"sudo -S systemctl stop barnyard2.service",shell=True)
+    subprocess.Popen("sudo systemctl stop barnyard2.service",shell=True)
 
-def dReload():
-    subprocess.Popen("echo "+sudoPwd.get()+" | "+"sudo -S systemctl daemon-reload",shell=True)
+def reStrtSnortSvc():
+    subprocess.Popen("sudo systemctl restart snort.service",shell=True)
 
-def dlRlset():
-    pulledPorkOut=subprocess.Popen("echo "+sudoPwd.get()+" | "+"sudo -S /usr/local/bin/pulledpork.pl -c /etc/snort/pulledpork.conf -l",shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-    stdout,stderr=pulledPorkOut.communicate()
-    separatorUd=ttk.Separator(labelFrameUd)
-    separatorUd.grid(column=0,row=2,sticky=Tkinter.E+Tkinter.W)
-    labelPulledPorkOut=ttk.Label(labelFrameUd)
-    labelPulledPorkOut.grid(column=0,row=3,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
-    labelPulledPorkOut.config(text=stdout)
+def reStrtBarnyardSvc():
+    subprocess.Popen("sudo systemctl restart barnyard2.service",shell=True)
 
 def askAppLoc():
     openAppLoc=tkFileDialog.askopenfilename(initialdir="/usr/local/bin/",title="Select application file",filetypes = (("Snort application files","snort"),("All files","*.*")))
@@ -128,7 +122,6 @@ def svExecStart():
     config.set("Service","ExecStart",execStart)
     with open("/lib/systemd/system/snort.service","w") as configfile:
         config.write(configfile)
-    dReload()
 
 def askRlFLoc():
     openRlFLoc=tkFileDialog.askopenfilename(initialdir="/etc/snort/rules",title="Select rule file",filetypes=(("Rule files","*.rules"),("All files","*.*")))
@@ -287,15 +280,147 @@ def addRl():
         wF.writelines(" ".join(nRl))
     rRlF()
 
+def edRl():
+    global seledRlLnNo
+    intSeledRlLnNo=int(seledRlLnNo)-1
+    with open(seledRlF.get(),"r+") as rF:
+        readlines=rF.readlines()
+        nRl=[]
+        if seledActn.get() != "":
+            nRl.insert(len(nRl),seledActn.get())
+        if seledProt.get() != "":
+            nRl.insert(len(nRl),seledProt.get())
+        if seledSrcIPAdd.get() != "":
+            nRl.insert(len(nRl),seledSrcIPAdd.get())
+        if seledSrcPtNo.get() != "":
+            nRl.insert(len(nRl),seledSrcPtNo.get())
+        if seledDirOpr.get() != "":
+            nRl.insert(len(nRl),seledDirOpr.get())
+        if seledDestIPAdd.get() != "":
+            nRl.insert(len(nRl),seledDestIPAdd.get())
+        if seledDestPtNo.get() != "":
+            nRl.insert(len(nRl),seledDestPtNo.get())
+        if seledMsg.get() != "" or seledRefIdSys.get() != "" or seledGId.get() != "" or seledGId.get() != "" or seledRev.get() != "" or seledClTp.get() != "" or seledPri.get() != "":
+            nRl.insert(len(nRl),"(")
+        if seledMsg.get() != "":
+            fSeledMsg="msg:\""+seledMsg.get()+"\";"
+            nRl.insert(len(nRl),fSeledMsg)
+        if seledRefIdSys.get() != "" and seledRefId.get() != "":
+            fSeledRefIdSys="reference:"+seledRefIdSys.get()+","
+            nRl.insert(len(nRl),fSeledRefIdSys)
+            fSeledRefId=seledRefId.get()+";"
+            nRl.insert(len(nRl),fSeledRefId)
+        if seledGId.get() != "":
+            fSeledGId="gid:"+seledGId.get()+";"
+            nRl.insert(len(nRl),fSeledGId)
+        if seledSId.get() != "":
+            fSeledSId="sid:"+seledSId.get()+";"
+            nRl.insert(len(nRl),fSeledSId)
+        if seledRev.get() != "":
+            fSeledRev="rev:"+seledRev.get()+";"
+            nRl.insert(len(nRl),fSeledRev)
+        if seledClTp.get() != "":
+            fSeledClTp="classtype:"+seledClTp.get()+";"
+            nRl.insert(len(nRl),fSeledClTp)
+        if seledPri.get() != "":
+            fSeledPri="priority:"+seledPri.get()+";"
+            nRl.insert(len(nRl),fSeledPri)
+        if seledMsg.get() != "" or seledRefIdSys.get() != "" or seledGId.get() != "" or seledSId.get() != "" or seledRev.get() != "" or seledClTp.get() != "" or seledPri.get() != "":
+            nRl.insert(len(nRl),")")
+        readlines[intSeledRlLnNo]=" ".join(nRl)
+    with open(seledRlF.get(),"w+") as wF:
+        wF.writelines(readlines)
+    reloadRl()
+
 def treeviewClick(event):
     for item in treeViewRl.selection():
         global seledRlLnNo
         itemLs=treeViewRl.item(item,"values")
         seledRlLnNo=itemLs[0]
+        seledActn.set(itemLs[2])
+        seledProt.set(itemLs[3])
+        seledSrcIPAdd.set(itemLs[4])
+        seledSrcPtNo.set(itemLs[5])
+        seledDirOpr.set(itemLs[6])
+        seledDestIPAdd.set(itemLs[7])
+        seledDestPtNo.set(itemLs[8])
+        seledMsg.set(itemLs[9])
+        seledRefIdSys.set(itemLs[10])
+        seledRefId.set(itemLs[11])
+        seledGId.set(itemLs[12])
+        seledSId.set(itemLs[13])
+        seledRev.set(itemLs[14])
+        seledClTp.set(itemLs[15])
+        seledPri.set(itemLs[16])
     return seledRlLnNo
 
-def saveVar():
-    pass
+def askCfgFLoc():
+    openCfgFLoc=tkFileDialog.askopenfilename(initialdir="/etc/snort/",title="Select configuration file",filetypes=(("Configuration files","*.conf"),("All files","*.*")))
+    seledCfgF.set(openCfgFLoc)
+
+
+def loadCfg():
+    with open(seledCfgF.get(),"r") as rF:
+        for line in rF.readlines():
+            if re.match("ipvar HOME_NET .*",line):
+                homeNetAdd.set(re.sub("\n","",re.sub("ipvar HOME_NET ","",line)))
+            if re.match("ipvar EXTERNAL_NET .*",line):
+                extNetAdd.set(re.sub("\n","",re.sub("ipvar EXTERNAL_NET ","",line)))
+            if re.match("ipvar DNS_SERVERS .*",line):
+                dnsSIpAdd.set(re.sub("\n","",re.sub("ipvar DNS_SERVERS ","",line)))
+            if re.match("ipvar SMTP_SERVERS .*",line):
+                smtpSAdd.set(re.sub("\n","",re.sub("ipvar SMTP_SERVERS ","",line)))
+            if re.match("ipvar HTTP_SERVERS .*",line):
+                httpSAdd.set(re.sub("\n","",re.sub("ipvar HTTP_SERVERS ","",line)))
+            if re.match("ipvar SQL_SERVERS .*",line):
+                sqlSAdd.set(re.sub("\n","",re.sub("ipvar SQL_SERVERS ","",line)))
+            if re.match("ipvar TELNET_SERVERS .*",line):
+                telnetSAdd.set(re.sub("\n","",re.sub("ipvar TELNET_SERVERS ","",line)))
+            if re.match("ipvar SSH_SERVERS .*",line):
+                sshSAdd.set(re.sub("\n","",re.sub("ipvar SSH_SERVERS ","",line)))
+            if re.match("ipvar FTP_SERVERS .*",line):
+                ftpSAdd.set(re.sub("\n","",re.sub("ipvar FTP_SERVERS ","",line)))
+            if re.match("ipvar SIP_SERVERS .*",line):
+                sipSAdd.set(re.sub("\n","",re.sub("ipvar SIP_SERVERS ","",line)))
+                
+def svNetVar():
+    with open(seledCfgF.get(),"r+") as rF:
+        readlines=rF.readlines()
+        lnNo=0
+        for line in readlines:
+            if re.match("ipvar HOME_NET .*",line):
+                newHomeNetAdd="ipvar HOME_NET "+homeNetAdd.get()
+                readlines[lnNo]=re.sub("ipvar HOME_NET .*",newHomeNetAdd,line)
+            elif re.match("ipvar EXTERNAL_NET .*",line):
+                newExtNetAdd="ipvar EXTERNAL_NET "+extNetAdd.get()
+                readlines[lnNo]=re.sub("ipvar EXTERNAL_NET .*",newExtNetAdd,line)
+            elif re.match("ipvar DNS_SERVERS .*",line):
+                newDnsSIpAdd="ipvar DNS_SERVERS "+dnsSIpAdd.get()
+                readlines[lnNo]=re.sub("ipvar DNS_SERVERS .*",newDnsSIpAdd,line)
+            elif re.match("ipvar SMTP_SERVERS .*",line):
+                newSmtpSAdd="ipvar SMTP_SERVERS "+smtpSAdd.get()
+                readlines[lnNo]=re.sub("ipvar SMTP_SERVERS .*",newSmtpSAdd,line)
+            elif re.match("ipvar HTTP_SERVERS .*",line):
+                newHttpSAdd="ipvar HTTP_SERVERS "+httpSAdd.get()
+                readlines[lnNo]=re.sub("ipvar HTTP_SERVERS .*",newHttpSAdd,line)
+            elif re.match("ipvar SQL_SERVERS .*",line):
+                newSqlSAdd="ipvar SQL_SERVERS "+sqlSAdd.get()
+                readlines[lnNo]=re.sub("ipvar SQL_SERVERS .*",newSqlSAdd,line)
+            elif re.match("ipvar TELNET_SERVERS .*",line):
+                newTelnetSAdd="ipvar TELNET_SERVERS "+telnetSAdd.get()
+                readlines[lnNo]=re.sub("ipvar TELNET_SERVERS .*",newTelnetSAdd,line)
+            elif re.match("ipvar SSH_SERVERS .*",line):
+                newSshSAdd="ipvar SSH_SERVERS "+sshSAdd.get()
+                readlines[lnNo]=re.sub("ipvar SSH_SERVERS .*",newSshSAdd,line)
+            elif re.match("ipvar FTP_SERVERS .*",line):
+                newFtpSAdd="ipvar FTP_SERVERS "+ftpSAdd.get()
+                readlines[lnNo]=re.sub("ipvar FTP_SERVERS .*",newFtpSAdd,line)
+            elif re.match("ipvar SIP_SERVERS .*",line):
+                newSipSAdd="ipvar SIP_SERVERS "+sipSAdd.get()
+                readlines[lnNo]=re.sub("ipvar SIP_SERVERS .*",newSipSAdd,line)
+            lnNo=lnNo+1
+    with open(seledCfgF.get(),"w+") as wF:
+        wF.writelines(readlines)
 
 def shwAlert():
     connection=MySQLdb.connect(host="localhost",user="snort",passwd="MySqlSNORTpassword",db="snort")
@@ -327,17 +452,17 @@ def mysql_graph():
     matplotlib.pyplot.tick_params(axis="both",which="major",labelsize=14)
 
 def shwSnortVer():
-    snortVerOut=subprocess.Popen("snort -V",shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+    snortVerOut=subprocess.Popen("snort -V",shell=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
     stdout,stderr=snortVerOut.communicate()
-    labelFrameSnortInfoOut.config(text=stderr)
+    labelFrameSnortInfoOut.config(text=stdout)
 
 def shwBarnyardVer():
-    barnyardVerOut=subprocess.Popen("barnyard2 -V",shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+    barnyardVerOut=subprocess.Popen("barnyard2 -V",shell=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
     stdout,stderr=barnyardVerOut.communicate()
-    labelFrameBarnyardInfoOut.config(text=stderr)
+    labelFrameBarnyardInfoOut.config(text=stdout)
 
 def shwPulledPorkVer():
-    verO=subprocess.Popen("pulledpork.pl -V",shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+    verO=subprocess.Popen("pulledpork.pl -V",shell=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
     stdout,stderr=verO.communicate()
     labelFramePulledPorkInfoOut.config(text=stdout)
 
@@ -460,7 +585,7 @@ def aRlTLvl():
 
 def edRlTLvl():
     ToplevelaRl=Tkinter.Toplevel()
-    ToplevelaRl.title("Rule editing - Snort IDS GUI")
+    ToplevelaRl.title("Rule edit - Snort IDS GUI")
     ToplevelaRl.resizable(False,False)
     ToplevelaRl.attributes("-topmost",1) 
     
@@ -470,49 +595,49 @@ def edRlTLvl():
     labelEdActn=ttk.Label(labelFrameEdRl,text="Action:")
     labelEdActn.grid(column=0,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
     
-    comboboxEdActn=ttk.Combobox(labelFrameEdRl,textvariable=actn)
+    comboboxEdActn=ttk.Combobox(labelFrameEdRl,textvariable=seledActn)
     comboboxEdActn["values"]=("alert","log","pass","activate","dynamic","drop","reject","sdrop")
     comboboxEdActn.grid(column=1,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.W)
     
     labelEdProt=ttk.Label(labelFrameEdRl,text="Protocol:")
     labelEdProt.grid(column=0,row=1,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
     
-    comboboxEdProt=ttk.Combobox(labelFrameEdRl,textvariable=prot)
+    comboboxEdProt=ttk.Combobox(labelFrameEdRl,textvariable=seledProt)
     comboboxEdProt["values"]=("tcp","icmp","udp","ip")
     comboboxEdProt.grid(column=1,row=1,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.W)
     
     labelEdSrcIPAdd=ttk.Label(labelFrameEdRl,text="Source IP Address:")
     labelEdSrcIPAdd.grid(column=0,row=3,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
     
-    comboboxEdSrcIPAdd=ttk.Combobox(labelFrameEdRl,textvariable=srcIPAdd)
+    comboboxEdSrcIPAdd=ttk.Combobox(labelFrameEdRl,textvariable=seledSrcIPAdd)
     comboboxEdSrcIPAdd["values"]=("any","$HOME_NET","$EXTERNAL_NET","$DNS_SERVERS","$SMTP_SERVERS","$HTTP_SERVERS","$SQL_SERVERS","$TELNET_SERVERS","$SSH_SERVERS","$FTP_SERVERS","$SIP_SERVERS")
     comboboxEdSrcIPAdd.grid(column=1,row=3,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.W)
     
     labelEdSrcPtNo=ttk.Label(labelFrameEdRl,text="Source Port Number:")
     labelEdSrcPtNo.grid(column=0,row=4,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
     
-    comboboxEdSrcPtNo=ttk.Combobox(labelFrameEdRl,textvariable=srcPtNo)
+    comboboxEdSrcPtNo=ttk.Combobox(labelFrameEdRl,textvariable=seledSrcPtNo)
     comboboxEdSrcPtNo["values"]=("any","$HTTP_PORTS","$SHELLCODE_PORTS","$ORACLE_PORTS","$SSH_PORTS","$FTP_PORTS","$SIP_PORTS","$FILE_DATA_PORTS","$GTP_PORTS")
     comboboxEdSrcPtNo.grid(column=1,row=4,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.W)
     
     labelEdDirOpr=ttk.Label(labelFrameEdRl,text="Direction Operator:")
     labelEdDirOpr.grid(column=0,row=5,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
     
-    comboboxEdDirOpr=ttk.Combobox(labelFrameEdRl,textvariable=dirOpr)
+    comboboxEdDirOpr=ttk.Combobox(labelFrameEdRl,textvariable=seledDirOpr)
     comboboxEdDirOpr["values"]=("->","<>")
     comboboxEdDirOpr.grid(column=1,row=5,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.W)
     
     labelEdDestIPAdd=ttk.Label(labelFrameEdRl,text="Destination IP Address:")
     labelEdDestIPAdd.grid(column=0,row=6,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
     
-    comboboxEdDestIPAdd=ttk.Combobox(labelFrameEdRl,textvariable=destIPAdd)
+    comboboxEdDestIPAdd=ttk.Combobox(labelFrameEdRl,textvariable=seledDestIPAdd)
     comboboxEdDestIPAdd["values"]=("any","$HOME_NET","$EXTERNAL_NET","$DNS_SERVERS","$SMTP_SERVERS","$HTTP_SERVERS","$SQL_SERVERS","$TELNET_SERVERS","$SSH_SERVERS","$FTP_SERVERS","$SIP_SERVERS")
     comboboxEdDestIPAdd.grid(column=1,row=6,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.W)
     
     labelDestPtNo=ttk.Label(labelFrameEdRl,text="Destination Port Number:")
     labelDestPtNo.grid(column=0,row=7,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
     
-    comboboxEdDestPtNo=ttk.Combobox(labelFrameEdRl,textvariable=destPtNo)
+    comboboxEdDestPtNo=ttk.Combobox(labelFrameEdRl,textvariable=seledDestPtNo)
     comboboxEdDestPtNo["values"]=("any","$HTTP_PORTS","$SHELLCODE_PORTS","$ORACLE_PORTS","$SSH_PORTS","$FTP_PORTS","$SIP_PORTS","$FILE_DATA_PORTS","$GTP_PORTS")
     comboboxEdDestPtNo.grid(column=1,row=7,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.W)
 
@@ -520,138 +645,158 @@ def edRlTLvl():
     separatorEd.grid(column=0,row=8,columnspan=2,sticky=Tkinter.E+Tkinter.W)
     
     labelEdMsg=ttk.Label(labelFrameEdRl,text="Message:")
-    labelEdMsg.grid(column=0,row=9,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
+    labelEdMsg.grid(column=0,row=9,ipadx=5,ipady=5,padx=5,pady=5,sticksvNetVarsvNetVary=Tkinter.E)
     
-    entryEdMsg=ttk.Entry(labelFrameEdRl,textvariable=msg)
+    entryEdMsg=ttk.Entry(labelFrameEdRl,textvariable=seledMsg)
     entryEdMsg.grid(column=1,row=9,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.W)
     
     labelEdRefIdSys=ttk.Label(labelFrameEdRl,text="Reference ID System:")
     labelEdRefIdSys.grid(column=0,row=10,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
     
-    comboboxEdRefIdSys=ttk.Combobox(labelFrameEdRl,textvariable=refIdSys)
+    comboboxEdRefIdSys=ttk.Combobox(labelFrameEdRl,textvariable=seledRefIdSys)
     comboboxEdRefIdSys["values"]=("bugtraq","cve","nessus","arachnids","mcafee","osvdb","msb","url")
     comboboxEdRefIdSys.grid(column=1,row=10,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.W)
     
     labelEdRefId=ttk.Label(labelFrameEdRl,text="Reference ID:")
     labelEdRefId.grid(column=0,row=11,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
     
-    entryEdRefId=ttk.Entry(labelFrameEdRl,textvariable=refId)
+    entryEdRefId=ttk.Entry(labelFrameEdRl,textvariable=seledRefId)
     entryEdRefId.grid(column=1,row=11,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.W)
     
     labelEdGId=ttk.Label(labelFrameEdRl,text="GID:")
     labelEdGId.grid(column=0,row=12,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
     
-    entryEdGId=ttk.Entry(labelFrameEdRl,textvariable=gId)
+    entryEdGId=ttk.Entry(labelFrameEdRl,textvariable=seledGId)
     entryEdGId.grid(column=1,row=12,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.W)
     
     labelEdSId=ttk.Label(labelFrameEdRl,text="SID:")
     labelEdSId.grid(column=0,row=13,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
     
-    entryEdSId=ttk.Entry(labelFrameEdRl,textvariable=sId)
+    entryEdSId=ttk.Entry(labelFrameEdRl,textvariable=seledSId)
     entryEdSId.grid(column=1,row=13,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.W)
     
     labelEdRev=ttk.Label(labelFrameEdRl,text="Revision:")
     labelEdRev.grid(column=0,row=14,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
     
-    entryEdRev=ttk.Entry(labelFrameEdRl,textvariable=rev)
+    entryEdRev=ttk.Entry(labelFrameEdRl,textvariable=seledRev)
     entryEdRev.grid(column=1,row=14,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.W)
     
     labelEdClTp=ttk.Label(labelFrameEdRl,text="Class Type:")
     labelEdClTp.grid(column=0,row=15,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
     
-    comboboxEdClTp=ttk.Combobox(labelFrameEdRl,textvariable=clTp)
+    comboboxEdClTp=ttk.Combobox(labelFrameEdRl,textvariable=seledClTp)
     comboboxEdClTp["values"]=("attempted-admin","attempted-user","inappropriate-content","policy-violation","shellcode-detect","successful-admin","successful-user","trojan-activity","unsuccessful-user","web-application-attack","attempted-dos","attempted-recon","bad-unknown","default-login-attempt","denial-of-service","misc-attack","non-standard-protocol","rpc-portmap-decode","successful-dos","successful-recon-largescale","successful-recon-limited","suspicious-filename-detect","suspicious-login","system-call-detect","unusual-client-port-connection","web-application-activity","icmp-event","misc-activity","network-scan","not-suspicious","protocol-command-decode","string-detect","unknown","tcp-connection")
     comboboxEdClTp.grid(column=1,row=15,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.W)
     
     labelEdPri=ttk.Label(labelFrameEdRl,text="Priority:")
     labelEdPri.grid(column=0,row=16,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
 
-    entryEdPri=ttk.Entry(labelFrameEdRl,textvariable=pri)
+    entryEdPri=ttk.Entry(labelFrameEdRl,textvariable=seledPri)
     entryEdPri.grid(column=1,row=16,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.W)
 
     separatorEd=ttk.Separator(labelFrameEdRl)
     separatorEd.grid(column=0,row=17,columnspan=2,sticky=Tkinter.E+Tkinter.W)
 
-    buttonEdRl=ttk.Button(labelFrameEdRl,text="Edit rule")
+    buttonEdRl=ttk.Button(labelFrameEdRl,text="Edit rule",command=edRl)
     buttonEdRl.grid(column=0,row=18,columnspan=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
+def udRlTLvl():
+    ToplevelUdRl=Tkinter.Toplevel()
+    ToplevelUdRl.title("Rule updating - Snort IDS GUI")
+    ToplevelUdRl.resizable(False,False)
+    ToplevelUdRl.attributes("-topmost",1)
+
+    labelFrameUdRl=ttk.Labelframe(ToplevelUdRl,text="Rule update")
+    labelFrameUdRl.grid(column=0,row=3,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+
+    labelUdStat=ttk.Label(labelFrameUdRl,text="Checking latest rule updates...")
+    labelUdStat.grid(column=0,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+
+    progressbarUdRl=ttk.Progressbar(labelFrameUdRl)
+    progressbarUdRl.grid(column=0,row=1,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+
+    progressbarUdRl.start()
+    
+    pulledPorkUdRl=subprocess.Popen("sudo /usr/local/bin/pulledpork.pl -c /etc/snort/pulledpork.conf -l",shell=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
+    stdout,stderr=pulledPorkUdRl.communicate()
+
+    separatorUdRl=ttk.Separator(labelFrameUdRl)
+    separatorUdRl.grid(column=0,row=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+    
+    labelPulledPorkO=ttk.Label(labelFrameUdRl,text=stdout)
+    labelPulledPorkO.grid(column=0,row=3,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+
+    labelUdStat.config(text="The rule update has been done.")
+
+    progressbarUdRl.stop()
+    progressbarUdRl.config(value=100)
+
+def udRl():
+    udRlThread=threading.Thread(target=udRlTLvl)
+    udRlThread.start()
+
 root=Tkinter.Tk()
-root.resizable(0,0)
+root.resizable(False,False)
 root.title("Snort Intrusion Detection System Graphical User Interface")
 
 mysql_graph()
 
 matplotlib.pyplot.savefig("graph.png")
 
-sudoPwd=Tkinter.StringVar(value="John1212")
-
 appLoc=Tkinter.StringVar()
-
 cfgLoc=Tkinter.StringVar()
-
 netItf=Tkinter.StringVar()
-
 usr=Tkinter.StringVar()
-
 seledgrp=Tkinter.StringVar()
-
 optQtOp=Tkinter.IntVar()
 
-HomeNet=Tkinter.StringVar(value="any")
-
-ExtNet=Tkinter.StringVar(value="any")
-
-DNSS=Tkinter.StringVar(value="$HOME_NET")
-
-SMTPS=Tkinter.StringVar(value="$HOME_NET")
-
-HTTPS=Tkinter.StringVar(value="$HOME_NET")
-
-SQLS=Tkinter.StringVar(value="$HOME_NET")
-
-TelnetS=Tkinter.StringVar(value="$HOME_NET")
-
-SSHS=Tkinter.StringVar(value="$HOME_NET")
-
-FTPS=Tkinter.StringVar(value="$HOME_NET")
-
-SIPS=Tkinter.StringVar(value="$HOME_NET")
-
-seledRlF=Tkinter.StringVar(value="/etc/snort/rules/test.rules")
-
+seledRlF=Tkinter.StringVar(value="/etc/snort/rules/local.rules")
 rlStat=Tkinter.StringVar()
-
 nRNo=Tkinter.StringVar()
 
 actn=Tkinter.StringVar()
-
 prot=Tkinter.StringVar()
-
 srcIPAdd=Tkinter.StringVar()
-
 srcPtNo=Tkinter.StringVar()
-
 dirOpr=Tkinter.StringVar()
-
 destIPAdd=Tkinter.StringVar()
-
 destPtNo=Tkinter.StringVar()
-
 msg=Tkinter.StringVar()
-
 refIdSys=Tkinter.StringVar()
-
 refId=Tkinter.StringVar()
-
 gId=Tkinter.StringVar()
-
 sId=Tkinter.StringVar()
-
 rev=Tkinter.StringVar()
-
 clTp=Tkinter.StringVar()
-
 pri=Tkinter.StringVar()
+
+seledActn=Tkinter.StringVar()
+seledProt=Tkinter.StringVar()
+seledSrcIPAdd=Tkinter.StringVar()
+seledSrcPtNo=Tkinter.StringVar()
+seledDirOpr=Tkinter.StringVar()
+seledDestIPAdd=Tkinter.StringVar()
+seledDestPtNo=Tkinter.StringVar()
+seledMsg=Tkinter.StringVar()
+seledRefIdSys=Tkinter.StringVar()
+seledRefId=Tkinter.StringVar()
+seledGId=Tkinter.StringVar()
+seledSId=Tkinter.StringVar()
+seledRev=Tkinter.StringVar()
+seledClTp=Tkinter.StringVar()
+seledPri=Tkinter.StringVar()
+
+seledCfgF=Tkinter.StringVar(value="/etc/snort/snort.conf")
+homeNetAdd=Tkinter.StringVar()
+extNetAdd=Tkinter.StringVar()
+dnsSIpAdd=Tkinter.StringVar()
+smtpSAdd=Tkinter.StringVar()
+httpSAdd=Tkinter.StringVar()
+sqlSAdd=Tkinter.StringVar()
+telnetSAdd=Tkinter.StringVar()
+sshSAdd=Tkinter.StringVar()
+ftpSAdd=Tkinter.StringVar()
+sipSAdd=Tkinter.StringVar()
 
 noteBookMain=ttk.Notebook(root)
 noteBookMain.grid(column=0,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
@@ -742,7 +887,7 @@ checkButtonQtOp.grid(column=0,row=6,columnspan=3,ipadx=5,ipady=5,padx=5,pady=5,s
 separatorSetting=ttk.Separator(labelFrameSetting)
 separatorSetting.grid(column=0,row=7,columnspan=3,sticky=Tkinter.E+Tkinter.W)
 
-buttonSv=ttk.Button(labelFrameSetting,text="Save with reload",command=svExecStart)
+buttonSv=ttk.Button(labelFrameSetting,text="Save",command=svExecStart)
 buttonSv.grid(column=0,row=8,columnspan=3,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E+Tkinter.W)
 
 frameBarnyard=ttk.Frame(noteBookMain)
@@ -786,71 +931,87 @@ labelStatBarnyardStatOut.grid(column=0,row=7,columnspan=2,ipadx=5,ipady=5,padx=5
 frameCfg=ttk.Frame(noteBookMain)
 frameCfg.grid(column=0,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
+labelFrameCfgFSelion=ttk.Labelframe(frameCfg,text="Configuration file selection")
+labelFrameCfgFSelion.grid(column=0,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+
+labelCfgF=ttk.Label(labelFrameCfgFSelion,text="Configuration file:")
+labelCfgF.grid(column=0,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
+
+comboboxCfgF=ttk.Combobox(labelFrameCfgFSelion,textvariable=seledCfgF)
+comboboxCfgF["values"]=("/etc/snort/snort.rules")
+comboboxCfgF.grid(column=1,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.W)
+
+buttonAskCfgF=ttk.Button(labelFrameCfgFSelion,text="Browse",command=askCfgFLoc)
+buttonAskCfgF.grid(column=2,row=0,ipadx=5,ipady=5,padx=5,pady=5)
+
+buttonReloadCfgF=ttk.Button(labelFrameCfgFSelion,text="Reload file",command=loadCfg)
+buttonReloadCfgF.grid(column=0,row=1,columnspan=3,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+
 labelFrameNetVar=ttk.Labelframe(frameCfg,text="Network variable")
-labelFrameNetVar.grid(column=0,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+labelFrameNetVar.grid(column=0,row=1,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
 labelHomeNet=ttk.Label(labelFrameNetVar,text="Home network:")
 labelHomeNet.grid(column=0,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
 
-entryHomeNet=ttk.Entry(labelFrameNetVar,textvariable=HomeNet)
+entryHomeNet=ttk.Entry(labelFrameNetVar,textvariable=homeNetAdd)
 entryHomeNet.grid(column=1,row=0,ipadx=5,ipady=5,padx=5,pady=5)
 
 labelExtNet=ttk.Label(labelFrameNetVar,text="External network:")
 labelExtNet.grid(column=0,row=1,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
 
-entryExtNet=ttk.Entry(labelFrameNetVar,textvariable=ExtNet)
+entryExtNet=ttk.Entry(labelFrameNetVar,textvariable=extNetAdd)
 entryExtNet.grid(column=1,row=1,ipadx=5,ipady=5,padx=5,pady=5)
 
 labelDNSS=ttk.Label(labelFrameNetVar,text="DNS Servers:")
 labelDNSS.grid(column=0,row=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
 
-entryDNSS=ttk.Entry(labelFrameNetVar,textvariable=DNSS)
+entryDNSS=ttk.Entry(labelFrameNetVar,textvariable=dnsSIpAdd)
 entryDNSS.grid(column=1,row=2,ipadx=5,ipady=5,padx=5,pady=5)
 
 labelSMTPS=ttk.Label(labelFrameNetVar,text="SMTP Servers:")
 labelSMTPS.grid(column=0,row=3,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
 
-entrySMTPS=ttk.Entry(labelFrameNetVar,textvariable=SMTPS)
+entrySMTPS=ttk.Entry(labelFrameNetVar,textvariable=smtpSAdd)
 entrySMTPS.grid(column=1,row=3,ipadx=5,ipady=5,padx=5,pady=5)
 
 labelHTTPS=ttk.Label(labelFrameNetVar,text="HTTP Servers:")
 labelHTTPS.grid(column=0,row=4,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
 
-entryHTTPS=ttk.Entry(labelFrameNetVar,textvariable=HTTPS)
+entryHTTPS=ttk.Entry(labelFrameNetVar,textvariable=httpSAdd)
 entryHTTPS.grid(column=1,row=4,ipadx=5,ipady=5,padx=5,pady=5)
 
 labelSQLS=ttk.Label(labelFrameNetVar,text="SQL Servers:")
 labelSQLS.grid(column=0,row=5,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
 
-entrySQLS=ttk.Entry(labelFrameNetVar,textvariable=SQLS)
+entrySQLS=ttk.Entry(labelFrameNetVar,textvariable=sqlSAdd)
 entrySQLS.grid(column=1,row=5,ipadx=5,ipady=5,padx=5,pady=5)
 
 labelTelnetS=ttk.Label(labelFrameNetVar,text="Telnet Servers:")
 labelTelnetS.grid(column=0,row=6,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
 
-entryTelnetS=ttk.Entry(labelFrameNetVar,textvariable=TelnetS)
+entryTelnetS=ttk.Entry(labelFrameNetVar,textvariable=telnetSAdd)
 entryTelnetS.grid(column=1,row=6,ipadx=5,ipady=5,padx=5,pady=5)
 
 labelSSHS=ttk.Label(labelFrameNetVar,text="SSH Servers:")
 labelSSHS.grid(column=0,row=7,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
 
-entrySSHS=ttk.Entry(labelFrameNetVar,textvariable=SSHS)
+entrySSHS=ttk.Entry(labelFrameNetVar,textvariable=sshSAdd)
 entrySSHS.grid(column=1,row=7,ipadx=5,ipady=5,padx=5,pady=5)
 
 labelFTPS=ttk.Label(labelFrameNetVar,text="FTP Servers:")
 labelFTPS.grid(column=0,row=8,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
 
-entryFTPS=ttk.Entry(labelFrameNetVar,textvariable=FTPS)
+entryFTPS=ttk.Entry(labelFrameNetVar,textvariable=ftpSAdd)
 entryFTPS.grid(column=1,row=8,ipadx=5,ipady=5,padx=5,pady=5)
 
 labelSIPS=ttk.Label(labelFrameNetVar,text="SIP Servers:")
 labelSIPS.grid(column=0,row=9,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
 
-entrySIPS=ttk.Entry(labelFrameNetVar,textvariable=SIPS)
+entrySIPS=ttk.Entry(labelFrameNetVar,textvariable=sipSAdd)
 entrySIPS.grid(column=1,row=9,ipadx=5,ipady=5,padx=5,pady=5)
 
-buttonSave=ttk.Button(labelFrameNetVar,text="Save",command=saveVar)
-buttonSave.grid(column=0,row=10,columnspan=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+buttonSvNetVar=ttk.Button(labelFrameNetVar,text="Save",command=svNetVar)
+buttonSvNetVar.grid(column=0,row=10,columnspan=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
 frameRl=ttk.Frame(noteBookMain)
 
@@ -946,7 +1107,7 @@ labelFrameUd.grid(column=0,row=1,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+
 labelUdRlset=ttk.Label(labelFrameUd,text="Click [Update ruleset] to check for and automatically apply any new posted updates for selected rules packages.")
 labelUdRlset.grid(column=0,row=0,ipadx=5,ipady=5,padx=5,pady=5)
 
-buttonUdRlset=ttk.Button(labelFrameUd,text="Update ruleset",command=dlRlset)
+buttonUdRlset=ttk.Button(labelFrameUd,text="Update ruleset",command=udRl)
 buttonUdRlset.grid(column=0,row=1,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
 frameAlert=ttk.Frame(noteBookMain)
@@ -984,7 +1145,7 @@ scrollbarXAlert.grid(column=0,row=1,sticky=Tkinter.E+Tkinter.W)
 scrollbarYAlert=ttk.Scrollbar(frameAlert,command=treeviewAlert.yview)
 scrollbarYAlert.grid(column=1,row=0,sticky=Tkinter.N+Tkinter.S)
 
-treeviewAlert.configure(xscrollcommand=scrollbarXAlert.set,yscrollcommand=scrollbarYAlert.set)
+treeviewAlert.config(xscrollcommand=scrollbarXAlert.set,yscrollcommand=scrollbarYAlert.set)
 
 frameGraph=ttk.Frame(noteBookMain)
 
@@ -1040,6 +1201,7 @@ shwBarnyardVer()
 shwPulledPorkVer()
 refreshSnortStat()
 rRlF()
+loadCfg()
 
 refreshThread=threading.Thread(target=refrshAllStat)
 refreshThread.start()
