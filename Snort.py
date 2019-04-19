@@ -1,23 +1,25 @@
-import Tkinter
-import ttk
-import tkFileDialog
-import tkMessageBox
+import ConfigParser
+import fileinput
+import grp
+import matplotlib.pyplot
+import matplotlib.cbook
+import MySQLdb
+import netifaces
+import os
+import pandas
+import PIL.Image
+import PIL.ImageTk
+import pwd
+import re
+import ScrolledText
 import subprocess
 import threading
 import time
-import fileinput
-import re
-import pwd
-import grp
-import ConfigParser
+import Tkinter
+import tkFileDialog
+import tkMessageBox
+import ttk
 import webbrowser
-import netifaces
-import MySQLdb
-import PIL.Image
-import PIL.ImageTk
-import matplotlib.pyplot
-import matplotlib.cbook
-import pandas
 
 global seledRlLnNo
 seledRlLnNo=0
@@ -584,12 +586,12 @@ def aRlTLvl():
     buttonaddRl.grid(column=0,row=18,columnspan=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
 def edRlTLvl():
-    ToplevelaRl=Tkinter.Toplevel()
-    ToplevelaRl.title("Rule edit - Snort IDS GUI")
-    ToplevelaRl.resizable(False,False)
-    ToplevelaRl.attributes("-topmost",1) 
+    ToplevelEdRl=Tkinter.Toplevel()
+    ToplevelEdRl.title("Rule edit - Snort IDS GUI")
+    ToplevelEdRl.resizable(False,False)
+    ToplevelEdRl.attributes("-topmost",1) 
     
-    labelFrameEdRl=ttk.Labelframe(ToplevelaRl,text="Rule editing")
+    labelFrameEdRl=ttk.Labelframe(ToplevelEdRl,text="Rule editing")
     labelFrameEdRl.grid(column=0,row=3,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
     
     labelEdActn=ttk.Label(labelFrameEdRl,text="Action:")
@@ -634,8 +636,8 @@ def edRlTLvl():
     comboboxEdDestIPAdd["values"]=("any","$HOME_NET","$EXTERNAL_NET","$DNS_SERVERS","$SMTP_SERVERS","$HTTP_SERVERS","$SQL_SERVERS","$TELNET_SERVERS","$SSH_SERVERS","$FTP_SERVERS","$SIP_SERVERS")
     comboboxEdDestIPAdd.grid(column=1,row=6,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.W)
     
-    labelDestPtNo=ttk.Label(labelFrameEdRl,text="Destination Port Number:")
-    labelDestPtNo.grid(column=0,row=7,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
+    labelEdDestPtNo=ttk.Label(labelFrameEdRl,text="Destination Port Number:")
+    labelEdDestPtNo.grid(column=0,row=7,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
     
     comboboxEdDestPtNo=ttk.Combobox(labelFrameEdRl,textvariable=seledDestPtNo)
     comboboxEdDestPtNo["values"]=("any","$HTTP_PORTS","$SHELLCODE_PORTS","$ORACLE_PORTS","$SSH_PORTS","$FTP_PORTS","$SIP_PORTS","$FILE_DATA_PORTS","$GTP_PORTS")
@@ -645,7 +647,7 @@ def edRlTLvl():
     separatorEd.grid(column=0,row=8,columnspan=2,sticky=Tkinter.E+Tkinter.W)
     
     labelEdMsg=ttk.Label(labelFrameEdRl,text="Message:")
-    labelEdMsg.grid(column=0,row=9,ipadx=5,ipady=5,padx=5,pady=5,sticksvNetVarsvNetVary=Tkinter.E)
+    labelEdMsg.grid(column=0,row=9,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
     
     entryEdMsg=ttk.Entry(labelFrameEdRl,textvariable=seledMsg)
     entryEdMsg.grid(column=1,row=9,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.W)
@@ -700,19 +702,25 @@ def edRlTLvl():
     buttonEdRl=ttk.Button(labelFrameEdRl,text="Edit rule",command=edRl)
     buttonEdRl.grid(column=0,row=18,columnspan=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
+def rLastRlsetUdTm():
+    with open("/var/log/sid_changes.log","r") as logF:
+        logFLnLs=logF.readlines()
+        if re.match("-=End Changes Logged for .*",logFLnLs[len(logFLnLs)-1])!=None:
+            labelUdRlSetTm.config(text=re.sub("\n","",re.sub("=-","",re.sub("-=End Changes Logged for ","",logFLnLs[len(logFLnLs)-1]))))
+
 def udRlTLvl():
     ToplevelUdRl=Tkinter.Toplevel()
     ToplevelUdRl.title("Rule updating - Snort IDS GUI")
     ToplevelUdRl.resizable(False,False)
     ToplevelUdRl.attributes("-topmost",1)
 
-    labelFrameUdRl=ttk.Labelframe(ToplevelUdRl,text="Rule update")
-    labelFrameUdRl.grid(column=0,row=3,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+    labelFrameUdRlSetTLvl=ttk.Labelframe(ToplevelUdRl,text="Rule update")
+    labelFrameUdRlSetTLvl.grid(column=0,row=3,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
-    labelUdStat=ttk.Label(labelFrameUdRl,text="Checking latest rule updates...")
+    labelUdStat=ttk.Label(labelFrameUdRlSetTLvl,text="Checking latest rule updates...")
     labelUdStat.grid(column=0,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
-    progressbarUdRl=ttk.Progressbar(labelFrameUdRl)
+    progressbarUdRl=ttk.Progressbar(labelFrameUdRlSetTLvl)
     progressbarUdRl.grid(column=0,row=1,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
     progressbarUdRl.start()
@@ -720,20 +728,46 @@ def udRlTLvl():
     pulledPorkUdRl=subprocess.Popen("sudo /usr/local/bin/pulledpork.pl -c /etc/snort/pulledpork.conf -l",shell=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
     stdout,stderr=pulledPorkUdRl.communicate()
 
-    separatorUdRl=ttk.Separator(labelFrameUdRl)
+    separatorUdRl=ttk.Separator(labelFrameUdRlSetTLvl)
     separatorUdRl.grid(column=0,row=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
     
-    labelPulledPorkO=ttk.Label(labelFrameUdRl,text=stdout)
+    labelPulledPorkO=ttk.Label(labelFrameUdRlSetTLvl,text=stdout)
     labelPulledPorkO.grid(column=0,row=3,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
     labelUdStat.config(text="The rule update has been done.")
 
     progressbarUdRl.stop()
     progressbarUdRl.config(value=100)
+    
+    rLastRlsetUdTm()
 
 def udRl():
     udRlThread=threading.Thread(target=udRlTLvl)
     udRlThread.start()
+
+def vLogTLvl():
+    toplevelVLog=Tkinter.Toplevel()
+    toplevelVLog.title("View log - Snort IDS GUI")
+    toplevelVLog.resizable(False,False)
+    toplevelVLog.attributes("-topmost",1)
+
+    labelFrameRlSetLog=ttk.Labelframe(toplevelVLog,text="Rule set log")
+    labelFrameRlSetLog.grid(column=0,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+
+    textRlSetLog=ScrolledText.ScrolledText(labelFrameRlSetLog)
+    textRlSetLog.grid(column=0,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+    
+    with open("/var/log/sid_changes.log", 'r') as logF:
+        textRlSetLog.insert(Tkinter.INSERT,logF.read())
+
+    buttonClsVLogTLvl=ttk.Button(labelFrameRlSetLog,text="Close",command=toplevelVLog.destroy)
+    buttonClsVLogTLvl.grid(column=0,row=1,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+
+def clsVLogTLvl():
+    toplevelVLog.destroy()
+
+def clrLog():
+    open("/var/log/sid_changes.log","w").close()
 
 root=Tkinter.Tk()
 root.resizable(False,False)
@@ -1101,14 +1135,29 @@ buttonDisaRl.grid(column=4,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+
 
 frameUd=ttk.Frame(noteBookMain)
 
-labelFrameUd=ttk.Labelframe(frameUd,text="Update")
-labelFrameUd.grid(column=0,row=1,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+labelFrameUdRlSet=ttk.Labelframe(frameUd,text="Update rule set")
+labelFrameUdRlSet.grid(column=0,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
-labelUdRlset=ttk.Label(labelFrameUd,text="Click [Update ruleset] to check for and automatically apply any new posted updates for selected rules packages.")
-labelUdRlset.grid(column=0,row=0,ipadx=5,ipady=5,padx=5,pady=5)
+labelUdRlSet=ttk.Label(labelFrameUdRlSet,text="Last Update:")
+labelUdRlSet.grid(column=0,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S)
 
-buttonUdRlset=ttk.Button(labelFrameUd,text="Update ruleset",command=udRl)
-buttonUdRlset.grid(column=0,row=1,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+labelUdRlSetTm=ttk.Label(labelFrameUdRlSet,text="Unknown")
+labelUdRlSetTm.grid(column=1,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.S+Tkinter.W)
+
+buttonUdRl=ttk.Button(labelFrameUdRlSet,text="Update rules",command=udRl)
+buttonUdRl.grid(column=0,row=1,columnspan=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+
+labelUdRlset=ttk.Label(labelFrameUdRlSet,text="Click [Update rules] to check for and automatically apply any new posted updates for selected rules packages.")
+labelUdRlset.grid(column=0,row=2,columnspan=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+
+labelFrameManageRlSetUdLog=ttk.Labelframe(frameUd,text="Manage rule set log")
+labelFrameManageRlSetUdLog.grid(column=0,row=1,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+
+buttonVLog=ttk.Button(labelFrameManageRlSetUdLog,text="View log",command=vLogTLvl)
+buttonVLog.grid(column=0,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+
+buttonClrLog=ttk.Button(labelFrameManageRlSetUdLog,text="Clear log",command=clrLog)
+buttonClrLog.grid(column=1,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
 frameAlert=ttk.Frame(noteBookMain)
 
@@ -1202,6 +1251,7 @@ shwPulledPorkVer()
 refreshSnortStat()
 rRlF()
 loadCfg()
+rLastRlsetUdTm()
 
 refreshThread=threading.Thread(target=refrshAllStat)
 refreshThread.start()
