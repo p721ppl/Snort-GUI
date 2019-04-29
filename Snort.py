@@ -25,34 +25,52 @@ global seledRlLnNo
 seledRlLnNo=0
 
 def refreshSnortIsEnad():
-    snortIsEnaOut=subprocess.Popen("systemctl is-enabled snort.service",shell=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
+    snortIsEnaOut=subprocess.Popen("systemctl is-enabled snort.service",shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
     stdout,stderr=snortIsEnaOut.communicate()
-    labelStatSnortIsEnaOut.config(text=re.sub("\n","",stdout))
-
+    if stdout == "":
+        labelStatSnortIsEnaOut.config(text="Unknown")
+    else:
+        labelStatSnortIsEnaOut.config(text=re.sub("\n","",stdout))
+       
 def refreshSnortIsFled():
-    snortIsFledOut=subprocess.Popen("systemctl is-failed snort.service",shell=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
+    snortIsFledOut=subprocess.Popen("systemctl is-failed snort.service",shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
     stdout,stderr=snortIsFledOut.communicate()
-    labelStatSnortIsFledOut.config(text=re.sub("\n","",stdout))
+    if stdout == "":
+        labelStatSnortIsFledOut.config(text="Unknown")
+    else:
+        labelStatSnortIsFledOut.config(text=re.sub("\n","",stdout))
 
 def refreshBarnyardIsEnad():
-    barnyardIsEnaOut=subprocess.Popen("systemctl is-enabled barnyard2.service",shell=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
+    barnyardIsEnaOut=subprocess.Popen("systemctl is-enabled barnyard2.service",shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
     stdout,stderr=barnyardIsEnaOut.communicate()
-    labelStatBarnyardIsEnaOut.config(text=re.sub("\n","",stdout))
+    if stdout == "":
+        labelStatBarnyardIsEnaOut.config(text="Unknown")
+    else:
+        labelStatBarnyardIsEnaOut.config(text=re.sub("\n","",stdout))
     
 def refreshBarnyardIsFled():
-    barnyardIsFledOut=subprocess.Popen("systemctl is-failed barnyard2.service",shell=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
+    barnyardIsFledOut=subprocess.Popen("systemctl is-failed barnyard2.service",shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
     stdout,stderr=barnyardIsFledOut.communicate()
-    labelStatBarnyardIsFledOut.config(text=re.sub("\n","",stdout))
+    if stdout == "":
+        labelStatBarnyardIsFledOut.config(text="Unknown")
+    else:
+        labelStatBarnyardIsFledOut.config(text=re.sub("\n","",stdout))
 
 def refreshSnortStat():
-    snortStatOut=subprocess.Popen("systemctl status snort.service",shell=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
+    snortStatOut=subprocess.Popen("systemctl status snort.service",shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
     stdout,stderr=snortStatOut.communicate()
-    labelStatSnortStatOut.config(text=stdout)
+    if stdout == "":
+        labelStatSnortStatOut.config(text="Unknown")
+    else:
+        labelStatSnortStatOut.config(text=stdout)
 
 def refreshBarnyardStat():
-    barnyardStatOut=subprocess.Popen("systemctl status barnyard2.service",shell=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
+    barnyardStatOut=subprocess.Popen("systemctl status barnyard2.service",shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
     stdout,stderr=barnyardStatOut.communicate()
-    labelStatBarnyardStatOut.config(text=stdout)
+    if stdout == "":
+        labelStatBarnyardStatOut.config(text="Unknown")
+    else:
+        labelStatBarnyardStatOut.config(text=stdout)
     
 def refrshAllStat():
     while True:
@@ -63,6 +81,10 @@ def refrshAllStat():
         refreshSnortStat()
         refreshBarnyardStat()
         time.sleep(1)
+
+def sysCtlCmd(cmd,n):
+    execCmd=subprocess.Popen("sudo systemctl "cmd+" "+n,shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+    stdout,stderr=execCmd.communicate()
 
 def snortEnaSvc():
     subprocess.Popen("sudo systemctl enable snort.service",shell=True)
@@ -705,13 +727,14 @@ def edRlTLvl():
 def rLastRlsetUdTm():
     with open("/var/log/sid_changes.log","r") as logF:
         logFLnLs=logF.readlines()
-        if re.match("-=End Changes Logged for .*",logFLnLs[len(logFLnLs)-1])!=None:
+        try:
             labelUdRlSetTm.config(text=re.sub("\n","",re.sub("=-","",re.sub("-=End Changes Logged for ","",logFLnLs[len(logFLnLs)-1]))))
+        except:
+            labelUdRlSetTm.config(text="Unknown")
 
 def udRlTLvl():
     ToplevelUdRl=Tkinter.Toplevel()
     ToplevelUdRl.title("Rule updating - Snort IDS GUI")
-    ToplevelUdRl.resizable(False,False)
     ToplevelUdRl.attributes("-topmost",1)
 
     labelFrameUdRlSetTLvl=ttk.Labelframe(ToplevelUdRl,text="Rule update")
@@ -748,7 +771,6 @@ def udRl():
 def vLogTLvl():
     toplevelVLog=Tkinter.Toplevel()
     toplevelVLog.title("View log - Snort IDS GUI")
-    toplevelVLog.resizable(False,False)
     toplevelVLog.attributes("-topmost",1)
 
     labelFrameRlSetLog=ttk.Labelframe(toplevelVLog,text="Rule set log")
