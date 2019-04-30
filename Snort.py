@@ -1,4 +1,5 @@
 import ConfigParser
+import datetime
 import fileinput
 import grp
 import matplotlib.pyplot
@@ -73,39 +74,92 @@ def refrshAllStat():
         refreshBarnyardIsFled()
         time.sleep(1)
 
-def sysCtlCmd(cmd,n):
-    execCmd=subprocess.Popen("sudo systemctl "+cmd+" "+n,shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-    stdout,stderr=execCmd.communicate()
-
 def snortEnaSvc():
-    subprocess.Popen("sudo systemctl enable snort.service",shell=True)
+    snortEnaSvcO=subprocess.Popen("sudo systemctl enable snort.service",shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+    stdout,stderr=snortEnaSvcO.communicate()
+    if snortEnaSvcO.returncode == 0:
+        tkMessageBox.showinfo("Information","The Snort service was successfully enabled.")
+    if snortEnaSvcO.returncode != 0:
+        tkMessageBox.showerror("Error",stderr)
     
 def snortDisaSvc():
-    subprocess.Popen("sudo systemctl disable snort.service",shell=True)
-
+    snortDisaSvcO=subprocess.Popen("sudo systemctl disable snort.service",shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+    stdout,stderr=snortDisaSvcO.communicate()
+    if snortDisaSvcO.returncode == 0:
+        tkMessageBox.showinfo("Information","The Snort service was successfully disabled.")
+    if snortDisaSvcO.returncode != 0:
+        tkMessageBox.showerror("Error",stderr)
+        
 def snortStrtSvc():
-    subprocess.Popen("sudo systemctl start snort.service",shell=True)
-    
+    snortStrtSvcO=subprocess.Popen("sudo systemctl start snort.service",shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+    stdout,stderr=snortStrtSvcO.communicate()
+    if snortStrtSvcO.returncode == 0:
+        tkMessageBox.showinfo("Information","The Snort service started successfully.")
+    if snortStrtSvcO.returncode != 0:
+        tkMessageBox.showerror("Error",stderr)
+        
 def snortStSvc():
-    subprocess.Popen("sudo systemctl stop snort.service",shell=True)
-
+    snortStSvcO=subprocess.Popen("sudo systemctl stop snort.service",shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+    stdout,stderr=snortStSvcO.communicate()
+    if snortStSvcO.returncode == 0:
+        tkMessageBox.showinfo("Information","The Snort service stopped successfully.")
+    if snortStSvcO.returncode != 0:
+        tkMessageBox.showerror("Error",stderr)
+        
 def barnyardEnaSvc():
-    subprocess.Popen("sudo systemctl enable barnyard2.service",shell=True)
-    
+    barnyardEnaSvcO=subprocess.Popen("sudo systemctl enable barnyard2.service",shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+    stdout,stderr=barnyardEnaSvcO.communicate()
+    if barnyardEnaSvcO.returncode == 0:
+        tkMessageBox.showinfo("Information","The Barnyard service was successfully enabled.")
+    if barnyardEnaSvcO.returncode != 0:
+        tkMessageBox.showerror("Error",stderr)
+        
 def barnyardDisaSvc():
-    subprocess.Popen("sudo systemctl disable barnyard2.service",shell=True)
-
+    barnyardDisaSvcO=subprocess.Popen("sudo systemctl disable barnyard2.service",shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+    stdout,stderr=barnyardDisaSvcO.communicate()
+    if barnyardDisaSvcO.returncode == 0:
+        tkMessageBox.showinfo("Information","The Barnyard service was successfully disabled.")
+    if barnyardDisaSvcO.returncode != 0:
+        tkMessageBox.showerror("Error",stderr)
+        
 def barnyardStrtSvc():
-    subprocess.Popen("sudo systemctl start barnyard2.service",shell=True)
-    
+    barnyardStrtSvcO=subprocess.Popen("sudo systemctl start barnyard2.service",shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+    stdout,stderr=barnyardStrtSvcO.communicate()
+    if barnyardStrtSvcO.returncode == 0:
+        tkMessageBox.showinfo("Information","The Barnyard service started successfully.")
+    if barnyardStrtSvcO.returncode != 0:
+        tkMessageBox.showerror("Error",stderr)
+        
 def barnyardStSvc():
-    subprocess.Popen("sudo systemctl stop barnyard2.service",shell=True)
-
+    barnyardStSvcO=subprocess.Popen("sudo systemctl stop barnyard2.service",shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+    stdout,stderr=barnyardStSvcO.communicate()
+    if barnyardStSvcO.returncode == 0:
+        tkMessageBox.showinfo("Information","The Barnyard service stopped successfully.")
+    if barnyardStSvcO.returncode != 0:
+        tkMessageBox.showerror("Error",stderr)
+        
 def reStrtSnortSvc():
-    subprocess.Popen("sudo systemctl restart snort.service",shell=True)
-
+    reStrtSnortSvcO=subprocess.Popen("sudo systemctl restart snort.service",shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+    stdout,stderr=reStrtSnortSvcO.communicate()
+    if reStrtSnortSvcO.returncode != 0:
+        tkMessageBox.showerror("Error",stderr)
+        
 def reStrtBarnyardSvc():
-    subprocess.Popen("sudo systemctl restart barnyard2.service",shell=True)
+    reStrtBarnyardSvcO=subprocess.Popen("sudo systemctl restart barnyard2.service",shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+    stdout,stderr=reStrtBarnyardSvcO.communicate()
+    if reStrtBarnyardSvcO.returncode != 0:
+        tkMessageBox.showerror("Error",stderr)
+        
+def reloadSysDMrgCfg():
+    reloadSysDMrgCfgO=subprocess.Popen("sudo systemctl daemon-reload",shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+    stdout,stderr=reloadSysDMrgCfgO.communicate()
+    if reloadSysDMrgCfgO.returncode != 0:
+        tkMessageBox.showerror("Error",stderr)
+        
+def restatAllSvc():
+    reloadSysDMrgCfg()
+    reStrtSnortSvc()
+    reStrtBarnyardSvc()
 
 def snortSvcStatDetTLvl():
     ToplevelSnortSvcStatDet=Tkinter.Toplevel()
@@ -173,22 +227,25 @@ def loadSvcCfg():
     config=ConfigParser.ConfigParser()
     config.optionxform=str
     config.read("/lib/systemd/system/snort.service")
-    execStart=config.get("Service","ExecStart")
-    matchAppLoc=re.match('([^\s*]*)\s*',execStart)
-    if matchAppLoc:
-        appLoc.set(matchAppLoc.group(1))
-    srchCfgLoc=re.search('-c\s*([^\s*]*)\s*',execStart)
-    if srchCfgLoc:
-        cfgLoc.set(srchCfgLoc.group(1))
-    srchNetItf=re.search('-i\s*([^\s*]*)\s*',execStart)
-    if srchNetItf:
-        netItf.set(srchNetItf.group(1))
-    srchExecUsr=re.search('-u\s*([^\s*]*)\s*',execStart)
-    if srchExecUsr:
-        execUsr.set(srchExecUsr.group(1))
-    srchExecGrp=re.search('-g\s*([^\s*]*)\s*',execStart)
-    if srchExecGrp:
-        execGrp.set(srchExecGrp.group(1))
+    try:
+        execStart=config.get("Service","ExecStart")
+        matchAppLoc=re.match('([^\s*]*)\s*',execStart)
+        if matchAppLoc:
+            appLoc.set(matchAppLoc.group(1))
+        srchCfgLoc=re.search('-c\s*([^\s*]*)\s*',execStart)
+        if srchCfgLoc:
+            cfgLoc.set(srchCfgLoc.group(1))
+        srchNetItf=re.search('-i\s*([^\s*]*)\s*',execStart)
+        if srchNetItf:
+            netItf.set(srchNetItf.group(1))
+        srchExecUsr=re.search('-u\s*([^\s*]*)\s*',execStart)
+        if srchExecUsr:
+            execUsr.set(srchExecUsr.group(1))
+        srchExecGrp=re.search('-g\s*([^\s*]*)\s*',execStart)
+        if srchExecGrp:
+            execGrp.set(srchExecGrp.group(1))
+    except:
+        tkMessageBox.showerror("Error","The option or section was not found in the configuration file.\nMake sure the profile is created and configured correctly.")
     
 def svSvcCfg():
     execStart=appLoc.get()+" -c "+cfgLoc.get()+" -i "+netItf.get()+" -u "+execUsr.get()+" -g "+execGrp.get()
@@ -200,6 +257,7 @@ def svSvcCfg():
     config.set("Service","ExecStart",execStart)
     with open("/lib/systemd/system/snort.service","w") as configfile:
         config.write(configfile)
+    tkMessageBox.showinfo("Information","The systemd manager needs to reload the configuration to finish changes.")
 
 def askRlFLoc():
     openRlFLoc=tkFileDialog.askopenfilename(initialdir="/etc/snort/rules",title="Select rule file",filetypes=(("Rule files","*.rules"),("All files","*.*")))
@@ -210,77 +268,80 @@ def clrTreeVRl():
         treeViewRl.delete(row)
 
 def rRlF():
-    with open(seledRlF.get(),"r") as rF:
-        lnNo=0
-        e=[]
-        valLs=[]
-        for line in rF:
-            lnNo=lnNo+1
-            line=line.lstrip()
-            line=re.sub("#\s*","#",line,count=1)
-            if re.match("\s*#*\s*alert|\s*#*\s*log|\s*#*\s*pass|\s*#*\s*activate|\s*#*\s*dynamic|\s*#*\s*drop|\s*#*\s*reject|\s*#*\s*sdrop",line) != None:
-                line=re.split("\s",line,maxsplit=7)[:8]
-                Actn=line[0]
-                Prot=line[1]
-                SrcIPAdd=line[2]
-                SrcPtNo=line[3]
-                DirOpr=line[4]
-                DestIPAdd=line[5]
-                DestPtNo=line[6]
-                if len(line) > 7:
-                    srchMsg=re.search('msg:\"([^";]*)\";',line[7])
-                    if srchMsg:
-                        msg=srchMsg.group(1)
+    try:
+        with open(seledRlF.get(),"r") as rF:
+            lnNo=0
+            e=[]
+            valLs=[]
+            for line in rF:
+                lnNo=lnNo+1
+                line=line.lstrip()
+                line=re.sub("#\s*","#",line,count=1)
+                if re.match("\s*#*\s*alert|\s*#*\s*log|\s*#*\s*pass|\s*#*\s*activate|\s*#*\s*dynamic|\s*#*\s*drop|\s*#*\s*reject|\s*#*\s*sdrop",line) != None:
+                    line=re.split("\s",line,maxsplit=7)[:8]
+                    Actn=line[0]
+                    Prot=line[1]
+                    SrcIPAdd=line[2]
+                    SrcPtNo=line[3]
+                    DirOpr=line[4]
+                    DestIPAdd=line[5]
+                    DestPtNo=line[6]
+                    if len(line) > 7:
+                        srchMsg=re.search('msg:\"([^";]*)\";',line[7])
+                        if srchMsg:
+                            msg=srchMsg.group(1)
+                        else:
+                            msg=''
+                        srchRefIdSys=re.search('reference:([^,]*),([^;]*);',line[7])
+                        if srchRefIdSys:
+                            refIdSys=srchRefIdSys.group(1)
+                            refId=srchRefIdSys.group(2)
+                        else:
+                            refIdSys=''
+                            refId=''
+                        srchGId=re.search('gid:([^;]*);',line[7])
+                        if srchGId:
+                            gId=srchGId.group(1)
+                        else:
+                            gId=''
+                        srchSId=re.search('sid:([^;]*);',line[7])
+                        if srchSId:
+                            sId=srchSId.group(1)
+                        else:
+                            sId=''
+                        srchRev=re.search('rev:([^;]*);',line[7])
+                        if srchRev:
+                            rev=srchRev.group(1)
+                        else:
+                            rev=''
+                        srchClTp=re.search('classtype:([^;]*);',line[7])
+                        if srchClTp:
+                            clTp=srchClTp.group(1)
+                        else:
+                            clTp=''
+                        srchPri=re.search('priority:([^;]*);',line[7])
+                        if srchPri:
+                            pri=srchPri.group(1)
+                        else:
+                            pri=''
                     else:
                         msg=''
-                    srchRefIdSys=re.search('reference:([^,]*),([^;]*);',line[7])
-                    if srchRefIdSys:
-                        refIdSys=srchRefIdSys.group(1)
-                        refId=srchRefIdSys.group(2)
-                    else:
                         refIdSys=''
                         refId=''
-                    srchGId=re.search('gid:([^;]*);',line[7])
-                    if srchGId:
-                        gId=srchGId.group(1)
-                    else:
                         gId=''
-                    srchSId=re.search('sid:([^;]*);',line[7])
-                    if srchSId:
-                        sId=srchSId.group(1)
-                    else:
                         sId=''
-                    srchRev=re.search('rev:([^;]*);',line[7])
-                    if srchRev:
-                        rev=srchRev.group(1)
-                    else:
                         rev=''
-                    srchClTp=re.search('classtype:([^;]*);',line[7])
-                    if srchClTp:
-                        clTp=srchClTp.group(1)
-                    else:
                         clTp=''
-                    srchPri=re.search('priority:([^;]*);',line[7])
-                    if srchPri:
-                        pri=srchPri.group(1)
-                    else:
                         pri=''
-                else:
-                    msg=''
-                    refIdSys=''
-                    refId=''
-                    gId=''
-                    sId=''
-                    rev=''
-                    clTp=''
-                    pri=''
-                if Actn=="alert" or Actn=="log" or Actn=="pass" or Actn=="activate" or Actn=="dynamic" or Actn=="drop" or Actn=="reject" or Actn=="sdrop":
-                    rlStat="Enable"
-                elif Actn=="#alert" or Actn=="#log" or Actn=="#pass" or Actn=="#activate" or Actn=="#dynamic" or Actn=="#drop" or Actn=="#reject" or Actn=="#sdrop":
-                    rlStat="Disable"
-                else:
-                    rlStat="Unknown"
-                treeViewRl.insert("","end",values=(lnNo,rlStat,Actn,Prot,SrcIPAdd,SrcPtNo,DirOpr,DestIPAdd,DestPtNo,msg,refIdSys,refId,gId,sId,rev,clTp,pri))
+                    if Actn=="alert" or Actn=="log" or Actn=="pass" or Actn=="activate" or Actn=="dynamic" or Actn=="drop" or Actn=="reject" or Actn=="sdrop":
+                        rlStat="Enable"
+                    elif Actn=="#alert" or Actn=="#log" or Actn=="#pass" or Actn=="#activate" or Actn=="#dynamic" or Actn=="#drop" or Actn=="#reject" or Actn=="#sdrop":
+                        rlStat="Disable"
+                    else:
+                        rlStat="Unknown"
+                    treeViewRl.insert("","end",values=(lnNo,rlStat,Actn,Prot,SrcIPAdd,SrcPtNo,DirOpr,DestIPAdd,DestPtNo,msg,refIdSys,refId,gId,sId,rev,clTp,pri))
+    except IOError:
+        tkMessageBox.showerror("Error","No such file. Please enter or select a valid rule file.")
 
 def reloadRl():
     clrTreeVRl()
@@ -289,125 +350,145 @@ def reloadRl():
 def enaRl():
     global seledRlLnNo
     intSeledRlLnNo=int(seledRlLnNo)-1
-    with open(seledRlF.get(),"r+") as rF:
-        readlines=rF.readlines()
-        readlines[intSeledRlLnNo]=re.sub("#","",readlines[intSeledRlLnNo],count=1)
-    with open(seledRlF.get(),"w+") as wF:
-        wF.writelines(readlines)
+    try:
+        with open(seledRlF.get(),"r+") as rF:
+            readlines=rF.readlines()
+            readlines[intSeledRlLnNo]=re.sub("#","",readlines[intSeledRlLnNo],count=1)
+        with open(seledRlF.get(),"w+") as wF:
+            wF.writelines(readlines)
+    except IOError:
+        tkMessageBox.showerror("Error","No such file. Please enter or select a valid rule file.")
+    else:
+        tkMessageBox.showinfo("Information","The rule was successfully enabled.\nThe Snort service needs to restart to finish changes.")
     reloadRl()
 
 def disaRl():
     global seledRlLnNo
     intSeledRlLnNo=int(seledRlLnNo)-1
-    with open(seledRlF.get(),"r+") as rF:
-        readlines=rF.readlines()
-    if re.match("\s*#+\s*",readlines[intSeledRlLnNo])!=None:
-        pass
+    try:
+        with open(seledRlF.get(),"r+") as rF:
+            readlines=rF.readlines()
+        if re.match("\s*#+\s*",readlines[intSeledRlLnNo])!=None:
+            pass
+        else:
+            with open(seledRlF.get(),"w+") as wF:
+                readlines[intSeledRlLnNo]="#"+readlines[intSeledRlLnNo]
+                wF.writelines(readlines)
+    except IOError:
+        tkMessageBox.showerror("Error","No such file. Please enter or select a valid rule file.")
     else:
-        with open(seledRlF.get(),"w+") as wF:
-            readlines[intSeledRlLnNo]="#"+readlines[intSeledRlLnNo]
-            wF.writelines(readlines)
-        reloadRl()
+        tkMessageBox.showinfo("Information","The rule was successfully disabled.\nThe Snort service needs to restart to finish changes.")
+    reloadRl()
 
 def addRl():
     clrTreeVRl()
-    with open(seledRlF.get(),"a+") as wF:
-        nRl=[]
-        if actn.get() != "":
-            nRl.insert(len(nRl),actn.get())
-        if prot.get() != "":
-            nRl.insert(len(nRl),prot.get())
-        if srcIPAdd.get() != "":
-            nRl.insert(len(nRl),srcIPAdd.get())
-        if srcPtNo.get() != "":
-            nRl.insert(len(nRl),srcPtNo.get())
-        if dirOpr.get() != "":
-            nRl.insert(len(nRl),dirOpr.get())
-        if destIPAdd.get() != "":
-            nRl.insert(len(nRl),destIPAdd.get())
-        if destPtNo.get() != "":
-            nRl.insert(len(nRl),destPtNo.get())
-        if msg.get() != "" or refIdSys.get() != "" or gId.get() != "" or sId.get() != "" or rev.get() != "" or clTp.get() != "" or pri.get() != "":
-            nRl.insert(len(nRl),"(")
-        if msg.get() != "":
-            fMsg="msg:\""+msg.get()+"\";"
-            nRl.insert(len(nRl),fMsg)
-        if refIdSys.get() != "" and refId.get() != "":
-            fRefIdSys="reference:"+refIdSys.get()+","
-            nRl.insert(len(nRl),fRefIdSys)
-            fRefId=refId.get()+";"
-            nRl.insert(len(nRl),fRefId)
-        if gId.get() != "":
-            fGId="gid:"+gId.get()+";"
-            nRl.insert(len(nRl),fGId)
-        if sId.get() != "":
-            fSId="sid:"+sId.get()+";"
-            nRl.insert(len(nRl),fSId)
-        if rev.get() != "":
-            fRev="rev:"+rev.get()+";"
-            nRl.insert(len(nRl),fRev)
-        if clTp.get() != "":
-            fClTp="classtype:"+clTp.get()+";"
-            nRl.insert(len(nRl),fClTp)
-        if pri.get() != "":
-            fPri="priority:"+pri.get()+";"
-            nRl.insert(len(nRl),fPri)
-        if msg.get() != "" or refIdSys.get() != "" or gId.get() != "" or sId.get() != "" or rev.get() != "" or clTp.get() != "" or pri.get() != "":
-            nRl.insert(len(nRl),")")
-        wF.writelines("\n")
-        wF.writelines(" ".join(nRl))
+    try:
+        with open(seledRlF.get(),"a+") as wF:
+            nRl=[]
+            if actn.get() != "":
+                nRl.insert(len(nRl),actn.get())
+            if prot.get() != "":
+                nRl.insert(len(nRl),prot.get())
+            if srcIPAdd.get() != "":
+                nRl.insert(len(nRl),srcIPAdd.get())
+            if srcPtNo.get() != "":
+                nRl.insert(len(nRl),srcPtNo.get())
+            if dirOpr.get() != "":
+                nRl.insert(len(nRl),dirOpr.get())
+            if destIPAdd.get() != "":
+                nRl.insert(len(nRl),destIPAdd.get())
+            if destPtNo.get() != "":
+                nRl.insert(len(nRl),destPtNo.get())
+            if msg.get() != "" or refIdSys.get() != "" or gId.get() != "" or sId.get() != "" or rev.get() != "" or clTp.get() != "" or pri.get() != "":
+                nRl.insert(len(nRl),"(")
+            if msg.get() != "":
+                fMsg="msg:\""+msg.get()+"\";"
+                nRl.insert(len(nRl),fMsg)
+            if refIdSys.get() != "" and refId.get() != "":
+                fRefIdSys="reference:"+refIdSys.get()+","
+                nRl.insert(len(nRl),fRefIdSys)
+                fRefId=refId.get()+";"
+                nRl.insert(len(nRl),fRefId)
+            if gId.get() != "":
+                fGId="gid:"+gId.get()+";"
+                nRl.insert(len(nRl),fGId)
+            if sId.get() != "":
+                fSId="sid:"+sId.get()+";"
+                nRl.insert(len(nRl),fSId)
+            if rev.get() != "":
+                fRev="rev:"+rev.get()+";"
+                nRl.insert(len(nRl),fRev)
+            if clTp.get() != "":
+                fClTp="classtype:"+clTp.get()+";"
+                nRl.insert(len(nRl),fClTp)
+            if pri.get() != "":
+                fPri="priority:"+pri.get()+";"
+                nRl.insert(len(nRl),fPri)
+            if msg.get() != "" or refIdSys.get() != "" or gId.get() != "" or sId.get() != "" or rev.get() != "" or clTp.get() != "" or pri.get() != "":
+                nRl.insert(len(nRl),")")
+            wF.writelines("\n")
+            wF.writelines(" ".join(nRl))
+    except IOError:
+        tkMessageBox.showerror("Error","No such file. Please enter or select a valid rule file.")
+    else:
+        tkMessageBox.showinfo("Information","The rule was successfully added to the rule file.\nThe Snort service needs to restart to finish changes.")
     rRlF()
 
 def edRl():
     global seledRlLnNo
     intSeledRlLnNo=int(seledRlLnNo)-1
-    with open(seledRlF.get(),"r+") as rF:
-        readlines=rF.readlines()
-        nRl=[]
-        if seledActn.get() != "":
-            nRl.insert(len(nRl),seledActn.get())
-        if seledProt.get() != "":
-            nRl.insert(len(nRl),seledProt.get())
-        if seledSrcIPAdd.get() != "":
-            nRl.insert(len(nRl),seledSrcIPAdd.get())
-        if seledSrcPtNo.get() != "":
-            nRl.insert(len(nRl),seledSrcPtNo.get())
-        if seledDirOpr.get() != "":
-            nRl.insert(len(nRl),seledDirOpr.get())
-        if seledDestIPAdd.get() != "":
-            nRl.insert(len(nRl),seledDestIPAdd.get())
-        if seledDestPtNo.get() != "":
-            nRl.insert(len(nRl),seledDestPtNo.get())
-        if seledMsg.get() != "" or seledRefIdSys.get() != "" or seledGId.get() != "" or seledGId.get() != "" or seledRev.get() != "" or seledClTp.get() != "" or seledPri.get() != "":
-            nRl.insert(len(nRl),"(")
-        if seledMsg.get() != "":
-            fSeledMsg="msg:\""+seledMsg.get()+"\";"
-            nRl.insert(len(nRl),fSeledMsg)
-        if seledRefIdSys.get() != "" and seledRefId.get() != "":
-            fSeledRefIdSys="reference:"+seledRefIdSys.get()+","
-            nRl.insert(len(nRl),fSeledRefIdSys)
-            fSeledRefId=seledRefId.get()+";"
-            nRl.insert(len(nRl),fSeledRefId)
-        if seledGId.get() != "":
-            fSeledGId="gid:"+seledGId.get()+";"
-            nRl.insert(len(nRl),fSeledGId)
-        if seledSId.get() != "":
-            fSeledSId="sid:"+seledSId.get()+";"
-            nRl.insert(len(nRl),fSeledSId)
-        if seledRev.get() != "":
-            fSeledRev="rev:"+seledRev.get()+";"
-            nRl.insert(len(nRl),fSeledRev)
-        if seledClTp.get() != "":
-            fSeledClTp="classtype:"+seledClTp.get()+";"
-            nRl.insert(len(nRl),fSeledClTp)
-        if seledPri.get() != "":
-            fSeledPri="priority:"+seledPri.get()+";"
-            nRl.insert(len(nRl),fSeledPri)
-        if seledMsg.get() != "" or seledRefIdSys.get() != "" or seledGId.get() != "" or seledSId.get() != "" or seledRev.get() != "" or seledClTp.get() != "" or seledPri.get() != "":
-            nRl.insert(len(nRl),")")
-        readlines[intSeledRlLnNo]=" ".join(nRl)
-    with open(seledRlF.get(),"w+") as wF:
-        wF.writelines(readlines)
+    try:
+        with open(seledRlF.get(),"r+") as rF:
+            readlines=rF.readlines()
+            nRl=[]
+            if seledActn.get() != "":
+                nRl.insert(len(nRl),seledActn.get())
+            if seledProt.get() != "":
+                nRl.insert(len(nRl),seledProt.get())
+            if seledSrcIPAdd.get() != "":
+                nRl.insert(len(nRl),seledSrcIPAdd.get())
+            if seledSrcPtNo.get() != "":
+                nRl.insert(len(nRl),seledSrcPtNo.get())
+            if seledDirOpr.get() != "":
+                nRl.insert(len(nRl),seledDirOpr.get())
+            if seledDestIPAdd.get() != "":
+                nRl.insert(len(nRl),seledDestIPAdd.get())
+            if seledDestPtNo.get() != "":
+                nRl.insert(len(nRl),seledDestPtNo.get())
+            if seledMsg.get() != "" or seledRefIdSys.get() != "" or seledGId.get() != "" or seledGId.get() != "" or seledRev.get() != "" or seledClTp.get() != "" or seledPri.get() != "":
+                nRl.insert(len(nRl),"(")
+            if seledMsg.get() != "":
+                fSeledMsg="msg:\""+seledMsg.get()+"\";"
+                nRl.insert(len(nRl),fSeledMsg)
+            if seledRefIdSys.get() != "" and seledRefId.get() != "":
+                fSeledRefIdSys="reference:"+seledRefIdSys.get()+","
+                nRl.insert(len(nRl),fSeledRefIdSys)
+                fSeledRefId=seledRefId.get()+";"
+                nRl.insert(len(nRl),fSeledRefId)
+            if seledGId.get() != "":
+                fSeledGId="gid:"+seledGId.get()+";"
+                nRl.insert(len(nRl),fSeledGId)
+            if seledSId.get() != "":
+                fSeledSId="sid:"+seledSId.get()+";"
+                nRl.insert(len(nRl),fSeledSId)
+            if seledRev.get() != "":
+                fSeledRev="rev:"+seledRev.get()+";"
+                nRl.insert(len(nRl),fSeledRev)
+            if seledClTp.get() != "":
+                fSeledClTp="classtype:"+seledClTp.get()+";"
+                nRl.insert(len(nRl),fSeledClTp)
+            if seledPri.get() != "":
+                fSeledPri="priority:"+seledPri.get()+";"
+                nRl.insert(len(nRl),fSeledPri)
+            if seledMsg.get() != "" or seledRefIdSys.get() != "" or seledGId.get() != "" or seledSId.get() != "" or seledRev.get() != "" or seledClTp.get() != "" or seledPri.get() != "":
+                nRl.insert(len(nRl),")")
+            readlines[intSeledRlLnNo]=" ".join(nRl)
+        with open(seledRlF.get(),"w+") as wF:
+            wF.writelines(readlines)
+    except IOError:
+        tkMessageBox.showerror("Error","No such file. Please enter or select a valid rule file.")
+    else:
+        tkMessageBox.showinfo("Information","The rule was successfully edited into the rules file.\nThe Snort service needs to restart to finish changes.")
     reloadRl()
 
 def treeviewClick(event):
@@ -437,68 +518,76 @@ def askCfgFLoc():
     seledCfgF.set(openCfgFLoc)
 
 def loadCfg():
-    with open(seledCfgF.get(),"r") as rF:
-        for line in rF.readlines():
-            if re.match("ipvar HOME_NET .*",line):
-                homeNetAdd.set(re.sub("\n","",re.sub("ipvar HOME_NET ","",line)))
-            if re.match("ipvar EXTERNAL_NET .*",line):
-                extNetAdd.set(re.sub("\n","",re.sub("ipvar EXTERNAL_NET ","",line)))
-            if re.match("ipvar DNS_SERVERS .*",line):
-                dnsSIpAdd.set(re.sub("\n","",re.sub("ipvar DNS_SERVERS ","",line)))
-            if re.match("ipvar SMTP_SERVERS .*",line):
-                smtpSAdd.set(re.sub("\n","",re.sub("ipvar SMTP_SERVERS ","",line)))
-            if re.match("ipvar HTTP_SERVERS .*",line):
-                httpSAdd.set(re.sub("\n","",re.sub("ipvar HTTP_SERVERS ","",line)))
-            if re.match("ipvar SQL_SERVERS .*",line):
-                sqlSAdd.set(re.sub("\n","",re.sub("ipvar SQL_SERVERS ","",line)))
-            if re.match("ipvar TELNET_SERVERS .*",line):
-                telnetSAdd.set(re.sub("\n","",re.sub("ipvar TELNET_SERVERS ","",line)))
-            if re.match("ipvar SSH_SERVERS .*",line):
-                sshSAdd.set(re.sub("\n","",re.sub("ipvar SSH_SERVERS ","",line)))
-            if re.match("ipvar FTP_SERVERS .*",line):
-                ftpSAdd.set(re.sub("\n","",re.sub("ipvar FTP_SERVERS ","",line)))
-            if re.match("ipvar SIP_SERVERS .*",line):
-                sipSAdd.set(re.sub("\n","",re.sub("ipvar SIP_SERVERS ","",line)))
+    try:
+        with open(seledCfgF.get(),"r") as rF:
+            for line in rF.readlines():
+                if re.match("ipvar HOME_NET .*",line):
+                    homeNetAdd.set(re.sub("\n","",re.sub("ipvar HOME_NET ","",line)))
+                if re.match("ipvar EXTERNAL_NET .*",line):
+                    extNetAdd.set(re.sub("\n","",re.sub("ipvar EXTERNAL_NET ","",line)))
+                if re.match("ipvar DNS_SERVERS .*",line):
+                    dnsSIpAdd.set(re.sub("\n","",re.sub("ipvar DNS_SERVERS ","",line)))
+                if re.match("ipvar SMTP_SERVERS .*",line):
+                    smtpSAdd.set(re.sub("\n","",re.sub("ipvar SMTP_SERVERS ","",line)))
+                if re.match("ipvar HTTP_SERVERS .*",line):
+                    httpSAdd.set(re.sub("\n","",re.sub("ipvar HTTP_SERVERS ","",line)))
+                if re.match("ipvar SQL_SERVERS .*",line):
+                    sqlSAdd.set(re.sub("\n","",re.sub("ipvar SQL_SERVERS ","",line)))
+                if re.match("ipvar TELNET_SERVERS .*",line):
+                    telnetSAdd.set(re.sub("\n","",re.sub("ipvar TELNET_SERVERS ","",line)))
+                if re.match("ipvar SSH_SERVERS .*",line):
+                    sshSAdd.set(re.sub("\n","",re.sub("ipvar SSH_SERVERS ","",line)))
+                if re.match("ipvar FTP_SERVERS .*",line):
+                    ftpSAdd.set(re.sub("\n","",re.sub("ipvar FTP_SERVERS ","",line)))
+                if re.match("ipvar SIP_SERVERS .*",line):
+                    sipSAdd.set(re.sub("\n","",re.sub("ipvar SIP_SERVERS ","",line)))
+    except IOError:
+        tkMessageBox.showerror("Error","No such file. Please enter or select a valid configuration file.")
                 
 def svNetVar():
-    with open(seledCfgF.get(),"r+") as rF:
-        readlines=rF.readlines()
-        lnNo=0
-        for line in readlines:
-            if re.match("ipvar HOME_NET .*",line):
-                newHomeNetAdd="ipvar HOME_NET "+homeNetAdd.get()
-                readlines[lnNo]=re.sub("ipvar HOME_NET .*",newHomeNetAdd,line)
-            elif re.match("ipvar EXTERNAL_NET .*",line):
-                newExtNetAdd="ipvar EXTERNAL_NET "+extNetAdd.get()
-                readlines[lnNo]=re.sub("ipvar EXTERNAL_NET .*",newExtNetAdd,line)
-            elif re.match("ipvar DNS_SERVERS .*",line):
-                newDnsSIpAdd="ipvar DNS_SERVERS "+dnsSIpAdd.get()
-                readlines[lnNo]=re.sub("ipvar DNS_SERVERS .*",newDnsSIpAdd,line)
-            elif re.match("ipvar SMTP_SERVERS .*",line):
-                newSmtpSAdd="ipvar SMTP_SERVERS "+smtpSAdd.get()
-                readlines[lnNo]=re.sub("ipvar SMTP_SERVERS .*",newSmtpSAdd,line)
-            elif re.match("ipvar HTTP_SERVERS .*",line):
-                newHttpSAdd="ipvar HTTP_SERVERS "+httpSAdd.get()
-                readlines[lnNo]=re.sub("ipvar HTTP_SERVERS .*",newHttpSAdd,line)
-            elif re.match("ipvar SQL_SERVERS .*",line):
-                newSqlSAdd="ipvar SQL_SERVERS "+sqlSAdd.get()
-                readlines[lnNo]=re.sub("ipvar SQL_SERVERS .*",newSqlSAdd,line)
-            elif re.match("ipvar TELNET_SERVERS .*",line):
-                newTelnetSAdd="ipvar TELNET_SERVERS "+telnetSAdd.get()
-                readlines[lnNo]=re.sub("ipvar TELNET_SERVERS .*",newTelnetSAdd,line)
-            elif re.match("ipvar SSH_SERVERS .*",line):
-                newSshSAdd="ipvar SSH_SERVERS "+sshSAdd.get()
-                readlines[lnNo]=re.sub("ipvar SSH_SERVERS .*",newSshSAdd,line)
-            elif re.match("ipvar FTP_SERVERS .*",line):
-                newFtpSAdd="ipvar FTP_SERVERS "+ftpSAdd.get()
-                readlines[lnNo]=re.sub("ipvar FTP_SERVERS .*",newFtpSAdd,line)
-            elif re.match("ipvar SIP_SERVERS .*",line):
-                newSipSAdd="ipvar SIP_SERVERS "+sipSAdd.get()
-                readlines[lnNo]=re.sub("ipvar SIP_SERVERS .*",newSipSAdd,line)
-            lnNo=lnNo+1
-    with open(seledCfgF.get(),"w+") as wF:
-        wF.writelines(readlines)
-
+    try:
+        with open(seledCfgF.get(),"r+") as rF:
+            readlines=rF.readlines()
+            lnNo=0
+            for line in readlines:
+                if re.match("ipvar HOME_NET .*",line):
+                    newHomeNetAdd="ipvar HOME_NET "+homeNetAdd.get()
+                    readlines[lnNo]=re.sub("ipvar HOME_NET .*",newHomeNetAdd,line)
+                elif re.match("ipvar EXTERNAL_NET .*",line):
+                    newExtNetAdd="ipvar EXTERNAL_NET "+extNetAdd.get()
+                    readlines[lnNo]=re.sub("ipvar EXTERNAL_NET .*",newExtNetAdd,line)
+                elif re.match("ipvar DNS_SERVERS .*",line):
+                    newDnsSIpAdd="ipvar DNS_SERVERS "+dnsSIpAdd.get()
+                    readlines[lnNo]=re.sub("ipvar DNS_SERVERS .*",newDnsSIpAdd,line)
+                elif re.match("ipvar SMTP_SERVERS .*",line):
+                    newSmtpSAdd="ipvar SMTP_SERVERS "+smtpSAdd.get()
+                    readlines[lnNo]=re.sub("ipvar SMTP_SERVERS .*",newSmtpSAdd,line)
+                elif re.match("ipvar HTTP_SERVERS .*",line):
+                    newHttpSAdd="ipvar HTTP_SERVERS "+httpSAdd.get()
+                    readlines[lnNo]=re.sub("ipvar HTTP_SERVERS .*",newHttpSAdd,line)
+                elif re.match("ipvar SQL_SERVERS .*",line):
+                    newSqlSAdd="ipvar SQL_SERVERS "+sqlSAdd.get()
+                    readlines[lnNo]=re.sub("ipvar SQL_SERVERS .*",newSqlSAdd,line)
+                elif re.match("ipvar TELNET_SERVERS .*",line):
+                    newTelnetSAdd="ipvar TELNET_SERVERS "+telnetSAdd.get()
+                    readlines[lnNo]=re.sub("ipvar TELNET_SERVERS .*",newTelnetSAdd,line)
+                elif re.match("ipvar SSH_SERVERS .*",line):
+                    newSshSAdd="ipvar SSH_SERVERS "+sshSAdd.get()
+                    readlines[lnNo]=re.sub("ipvar SSH_SERVERS .*",newSshSAdd,line)
+                elif re.match("ipvar FTP_SERVERS .*",line):
+                    newFtpSAdd="ipvar FTP_SERVERS "+ftpSAdd.get()
+                    readlines[lnNo]=re.sub("ipvar FTP_SERVERS .*",newFtpSAdd,line)
+                elif re.match("ipvar SIP_SERVERS .*",line):
+                    newSipSAdd="ipvar SIP_SERVERS "+sipSAdd.get()
+                    readlines[lnNo]=re.sub("ipvar SIP_SERVERS .*",newSipSAdd,line)
+                lnNo=lnNo+1
+        with open(seledCfgF.get(),"w+") as wF:
+            wF.writelines(readlines)
+    except IOError:
+        tkMessageBox.showerror("Error","No such file. Please enter or select a valid configuration file.")
+    else:
+        tkMessageBox.showinfo("Information","The new variable is successfully saved in the configuration file.\nThe Snort service needs to restart to finish changes.")
+    
 def shwAlert():
     connection=MySQLdb.connect(host="localhost",user="snort",passwd="MySqlSNORTpassword",db="snort")
     cursor=connection.cursor()
@@ -507,6 +596,74 @@ def shwAlert():
     data=cursor.fetchall()
     for row in data:
         treeviewAlert.insert("","end",values=row)
+
+def lsAlerttcp():
+    treeviewAlert.delete(*treeviewAlert.get_children())
+    connection=MySQLdb.connect(host="localhost",user="snort",passwd="MySqlSNORTpassword",db="snort")
+    cursor=connection.cursor()
+
+    sql="SELECT sid, cid, signature, sig_name, timestamp, inet_ntoa(ip_src), inet_ntoa(ip_dst), ip_proto FROM acid1_event WHERE ip_proto = 6"
+    cursor.execute(sql)
+    data=cursor.fetchall()
+
+    for row in data:
+        treeviewAlert.insert("","end",values = row)
+
+def lsAlerticmp():
+    treeviewAlert.delete(*treeviewAlert.get_children())
+    connection=MySQLdb.connect(host="localhost",user="snort",passwd="MySqlSNORTpassword",db="snort")
+    cursor=connection.cursor()
+
+    sql="SELECT sid, cid, signature, sig_name, timestamp, inet_ntoa(ip_src), inet_ntoa(ip_dst), ip_proto FROM acid1_event WHERE ip_proto = 1"
+    cursor.execute(sql)
+    data=cursor.fetchall()
+
+    for row in data:
+        treeviewAlert.insert("","end",values = row)
+
+def lsAlertFilter():
+    treeviewAlert.delete(*treeviewAlert.get_children())
+    connection=MySQLdb.connect(host="localhost",user="snort",passwd="MySqlSNORTpassword",db="snort")
+    cursor=connection.cursor()
+
+    sidque = ""
+    sigque = ""
+    signameque = ""
+    srcque = ""
+    dstque = ""
+    dateque = ""
+    proque = ""
+
+    if lssid.get() !="":
+        sidque = str("AND sid LIKE '%"+lssid.get()+"%'")
+        print sidque
+    if lssignature.get() !="":
+        sigque = str("AND signature LIKE '%"+lssignature.get()+"%'")
+        print sigque
+    if lssigname.get() !="":
+        signameque = str("AND sig_name LIKE '%"+lssigname.get()+"%'")
+        print signameque
+    if lsipsrc.get() !="":
+        srcque = str("AND ip_src LIKE '%"+lsipsrc.get()+"%'")
+        print srcque
+    if lsipdst.get() !="":
+        dstque = str("AND ip_dst LIKE '%"+lsipdst.get()+"%'")
+        print dstque
+    if lssdatey.get() !=0 and lssdatem.get() !=0 and lssdated.get() !=0 and lsedatey.get() !=0 and lsedatem.get() !=0 and lsedated.get() !=0 :
+        start = datetime.datetime(lssdatey.get(),lssdatem.get(),lssdated.get()).strftime('%Y-%m-%d %H:%M:%S')
+        end = datetime.datetime(lsedatey.get(),lsedatem.get(),lsedated.get()).strftime('%Y-%m-%d %H:%M:%S')
+        dateque = str ("AND timestamp between '"+start+"' AND '"+end+"'")
+        print dateque
+
+    if lsipproto.get() !="":
+        proque = str("AND ip_proto LIKE '%"+lsipproto.get()+"%'")
+        print proque
+
+    sql =("SELECT sid,cid,signature,sig_name,timestamp,ip_src,ip_dst,ip_proto FROM acid1_event WHERE cid>-1 %s %s %s %s %s %s %s ORDER BY cid DESC")%(sidque,sigque,signameque,srcque,dstque,dateque,proque)
+    cursor.execute(sql)
+    data=cursor.fetchall()
+    for row in data:
+        treeviewAlert.insert("","end",values = row)
 
 #def mysql_graph():
 #    connection=MySQLdb.connect(host="localhost",user="snort",passwd="MySqlSNORTpassword",db="snort")
@@ -872,9 +1029,12 @@ def vLogTLvl():
 
     textRlSetLog=ScrolledText.ScrolledText(labelFrameRlSetLog)
     textRlSetLog.grid(column=0,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
-    
-    with open("/var/log/sid_changes.log", 'r') as logF:
-        textRlSetLog.insert(Tkinter.INSERT,logF.read())
+
+    try:
+        with open("/var/log/sid_changes.log", 'r') as logF:
+            textRlSetLog.insert(Tkinter.INSERT,logF.read())
+    except:
+        tkMessageBox.showerror("Error","Unable to open the rule update log.")
 
     buttonClsVLogTLvl=ttk.Button(labelFrameRlSetLog,text="Close",command=toplevelVLog.destroy)
     buttonClsVLogTLvl.grid(column=0,row=1,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
@@ -883,12 +1043,22 @@ def clsVLogTLvl():
     toplevelVLog.destroy()
 
 def clrLog():
-    open("/var/log/sid_changes.log","w").close()
-
+    try:
+        open("/var/log/sid_changes.log","w").close()
+    except:
+        tkMessageBox.showerror("Error","Unable to clean up log content.")
+    else:
+        tkMessageBox.showinfo("Information","Successfully cleaned up the log content.")
+    
 root=Tkinter.Tk()
 root.title("Snort Intrusion Detection System Graphical User Interface")
 root.grid_columnconfigure(0,weight=1)
 root.grid_rowconfigure(0,weight=1)
+
+style = ttk.Style()
+style.configure("C.TButton",foreground="orange",background="black")
+style.map("C.TButton",foreground=[('pressed','orange'),('active','orange')],background=[('pressed','light gray'),('active','gray')])
+
 
 appLoc=Tkinter.StringVar()
 cfgLoc=Tkinter.StringVar()
@@ -945,15 +1115,34 @@ sshSAdd=Tkinter.StringVar()
 ftpSAdd=Tkinter.StringVar()
 sipSAdd=Tkinter.StringVar()
 
+lssid=Tkinter.StringVar()
+lssignature=Tkinter.StringVar()
+lssigname=Tkinter.StringVar()
+lsipsrc=Tkinter.StringVar()
+lsipdst=Tkinter.StringVar()
+lssdatey=Tkinter.IntVar()
+lssdatem=Tkinter.IntVar()
+lssdated=Tkinter.IntVar()
+lsedatey=Tkinter.IntVar()
+lsedatem=Tkinter.IntVar()
+lsedated=Tkinter.IntVar()
+lsipproto=Tkinter.StringVar()
+
 noteBookMain=ttk.Notebook(root)
-noteBookMain.grid(column=0,row=1,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+noteBookMain.grid(column=0,row=1,columnspan=4,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+noteBookMain.grid_columnconfigure(0,weight=1)
+noteBookMain.grid_rowconfigure(0,weight=1)
 
 try:
     snortImg=PIL.ImageTk.PhotoImage(PIL.Image.open("snort.png"))
-    labelSnortImg=ttk.Label(root,image=snortImg,background="white",anchor=Tkinter.CENTER)
+    labelSnortImg=ttk.Label(root,image=snortImg,anchor=Tkinter.CENTER,background="black")
     labelSnortImg.grid(column=0,row=0,ipadx=10,ipady=10,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 except:
-    pass
+    labelSnort=ttk.Label(root,text="Snort",font=("UKIJ Tughra",30),anchor=Tkinter.CENTER,foreground="orange",background="black")
+    labelSnort.grid(column=0,row=0,ipadx=10,ipady=10,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+
+buttonReload=ttk.Button(root,text="Restart Snort",command=restatAllSvc,style="C.TButton")
+buttonReload.grid(column=0,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S)
 
 frameHome=ttk.Frame(noteBookMain)
 frameHome.grid(column=0,row=0,padx=5,pady=5,ipadx=5,ipady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
@@ -1092,7 +1281,7 @@ checkButtonQtOp.grid(column=1,row=6,columnspan=2,ipadx=5,ipady=5,padx=5,pady=5,s
 separatorSetting=ttk.Separator(labelFrameSetting)
 separatorSetting.grid(column=0,row=7,columnspan=3,sticky=Tkinter.E+Tkinter.W)
 
-buttonSv=ttk.Button(labelFrameSetting,text="Save",command=svSvcCfg)
+buttonSv=ttk.Button(labelFrameSetting,text="Save service configuration",command=svSvcCfg)
 buttonSv.grid(column=0,row=8,columnspan=3,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E+Tkinter.W)
 
 frameCfg=ttk.Frame(noteBookMain)
@@ -1295,8 +1484,31 @@ frameAlert=ttk.Frame(noteBookMain)
 frameAlert.grid(column=0,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 frameAlert.grid_columnconfigure(0,weight=1)
 frameAlert.grid_rowconfigure(0,weight=1)
+frameAlert.grid_rowconfigure(1,weight=1)
+frameAlert.grid_rowconfigure(2,weight=1)
 
-treeviewAlert=ttk.Treeview(frameAlert,columns=["sid","cid","signature","sig_name","sig_class_id","sig_priority","timestamp","ip_src","ip_dst","ip_proto","layer4_sport","layer4_dport"],selectmode="browse",show="headings")
+labelFrameAlertLogVSetting=ttk.Labelframe(frameAlert,text="Alert log view settings")
+labelFrameAlertLogVSetting.grid(column=0,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+labelFrameAlertLogVSetting.grid_columnconfigure(0,weight=1)
+labelFrameAlertLogVSetting.grid_columnconfigure(1,weight=1)
+labelFrameAlertLogVSetting.grid_columnconfigure(2,weight=1)
+labelFrameAlertLogVSetting.grid_rowconfigure(0,weight=1)
+
+buttonlsAlerttcp=ttk.Button(labelFrameAlertLogVSetting,text="All protocol traffic alert",command=shwAlert)
+buttonlsAlerttcp.grid(column=0,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+
+buttonlsAlerttcp=ttk.Button(labelFrameAlertLogVSetting,text="TCP traffic alert",command=lsAlerttcp)
+buttonlsAlerttcp.grid(column=1,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+
+buttonlsAlerttcp=ttk.Button(labelFrameAlertLogVSetting,text="ICMP traffic alert",command=lsAlerticmp)
+buttonlsAlerttcp.grid(column=2,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+
+labelFrameAlertLogE=ttk.Labelframe(frameAlert,text="Alert log entries")
+labelFrameAlertLogE.grid(column=0,row=1,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+labelFrameAlertLogE.grid_columnconfigure(0,weight=1)
+labelFrameAlertLogE.grid_rowconfigure(0,weight=1)
+
+treeviewAlert=ttk.Treeview(labelFrameAlertLogE,columns=["sid","cid","signature","sig_name","sig_class_id","sig_priority","timestamp","ip_src","ip_dst","ip_proto","layer4_sport","layer4_dport"],selectmode="browse",show="headings")
 treeviewAlert.heading("sid",text="SID")
 treeviewAlert.column("sid",width=30)
 treeviewAlert.heading("cid",text="CID")
@@ -1323,13 +1535,90 @@ treeviewAlert.heading("layer4_dport",text="DestPt")
 treeviewAlert.column("layer4_dport",width=50)
 treeviewAlert.grid(column=0,row=0,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
-scrollbarXAlert=ttk.Scrollbar(frameAlert,orient="horizontal",command=treeviewAlert.xview)
+scrollbarXAlert=ttk.Scrollbar(labelFrameAlertLogE,orient="horizontal",command=treeviewAlert.xview)
 scrollbarXAlert.grid(column=0,row=1,sticky=Tkinter.E+Tkinter.W)
 
-scrollbarYAlert=ttk.Scrollbar(frameAlert,command=treeviewAlert.yview)
+scrollbarYAlert=ttk.Scrollbar(labelFrameAlertLogE,command=treeviewAlert.yview)
 scrollbarYAlert.grid(column=1,row=0,sticky=Tkinter.N+Tkinter.S)
 
 treeviewAlert.config(xscrollcommand=scrollbarXAlert.set,yscrollcommand=scrollbarYAlert.set)
+
+labelFrameFilter=ttk.Labelframe(frameAlert,text="Alert log view filter")
+labelFrameFilter.grid(column=0,row=6,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+labelFrameFilter.grid_columnconfigure(0,weight=1)
+labelFrameFilter.grid_columnconfigure(1,weight=1)
+labelFrameFilter.grid_columnconfigure(2,weight=1)
+labelFrameFilter.grid_columnconfigure(3,weight=1)
+labelFrameFilter.grid_columnconfigure(4,weight=1)
+labelFrameFilter.grid_columnconfigure(5,weight=1)
+labelFrameFilter.grid_rowconfigure(0,weight=1)
+labelFrameFilter.grid_rowconfigure(1,weight=1)
+labelFrameFilter.grid_rowconfigure(2,weight=1)
+labelFrameFilter.grid_rowconfigure(3,weight=1)
+labelFrameFilter.grid_rowconfigure(4,weight=1)
+
+labellssid=ttk.Label(labelFrameFilter,text="SID:")
+labellssid.grid(column=0,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S)
+
+entrylssid=ttk.Entry(labelFrameFilter,textvariable=lssid)
+entrylssid.grid(column=1,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+
+labellssignature=ttk.Label(labelFrameFilter,text="Signature:")
+labellssignature.grid(column=2,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S)
+
+entrylssignature=ttk.Entry(labelFrameFilter,textvariable=lssignature)
+entrylssignature.grid(column=3,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+
+labellssig_name=ttk.Label(labelFrameFilter,text="Signature name:")
+labellssig_name.grid(column=4,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S)
+
+entrylssig_name=ttk.Entry(labelFrameFilter,textvariable=lssigname)
+entrylssig_name.grid(column=5,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+
+labellsip_src=ttk.Label(labelFrameFilter,text="Source Internet Protocol address:")
+labellsip_src.grid(column=0,row=1,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S)
+
+entrylsip_src=ttk.Entry(labelFrameFilter,textvariable=lsipsrc)
+entrylsip_src.grid(column=1,row=1,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+
+labellsip_dst=ttk.Label(labelFrameFilter,text="Destination Internet Protocol address:")
+labellsip_dst.grid(column=2,row=1,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S)
+
+entrylsip_dst=ttk.Entry(labelFrameFilter,textvariable=lsipdst)
+entrylsip_dst.grid(column=3,row=1,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+
+labellsip_proto=ttk.Label(labelFrameFilter,text="Protocol:")
+labellsip_proto.grid(column=4,row=1,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S)
+
+entrylsip_proto=ttk.Entry(labelFrameFilter,textvariable=lsipproto)
+entrylsip_proto.grid(column=5,row=1,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+
+labellssdate=ttk.Label(labelFrameFilter,text="Date From:")
+labellssdate.grid(column=0,row=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S)
+
+entrylssdatey=ttk.Entry(labelFrameFilter,textvariable=lssdatey)
+entrylssdatey.grid(column=1,row=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+
+entrylssdatem=ttk.Entry(labelFrameFilter,textvariable=lssdatem)
+entrylssdatem.grid(column=2,row=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+
+entrylssdated=ttk.Entry(labelFrameFilter,textvariable=lssdated)
+entrylssdated.grid(column=3,row=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+
+labellsedate=ttk.Label(labelFrameFilter,text="Date To:")
+labellsedate.grid(column=0,row=3,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S)
+
+entrylsedatey=ttk.Entry(labelFrameFilter,textvariable=lsedatey)
+entrylsedatey.grid(column=1,row=3,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+
+entrylsedatem=ttk.Entry(labelFrameFilter,textvariable=lsedatem)
+entrylsedatem.grid(column=2,row=3,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+
+entrylsedated=ttk.Entry(labelFrameFilter,textvariable=lsedated)
+entrylsedated.grid(column=3,row=3,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+
+buttonlsAlertFilter=ttk.Button(labelFrameFilter,text="Filter",command=lsAlertFilter)
+buttonlsAlertFilter.grid(column=0,row=4,columnspan=6,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
 #frameGraph=ttk.Frame(noteBookMain)
 
@@ -1374,7 +1663,6 @@ labelFrameManageRlSetUdLog.grid_columnconfigure(0,weight=1)
 labelFrameManageRlSetUdLog.grid_columnconfigure(1,weight=1)
 labelFrameManageRlSetUdLog.grid_columnconfigure(1,weight=1)
 labelFrameManageRlSetUdLog.grid_rowconfigure(0,weight=1)
-
 
 buttonVLog=ttk.Button(labelFrameManageRlSetUdLog,text="View rule update log",command=vLogTLvl)
 buttonVLog.grid(column=0,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
