@@ -588,10 +588,16 @@ def svNetVar():
     else:
         tkMessageBox.showinfo("Information","The new variable is successfully saved in the configuration file.\nThe Snort service needs to restart to finish changes.")
     
+def acidtable():
+    connection=MySQLdb.connect(host="localhost",user="root",passwd="MySqlROOTpassword",db="snort")
+    cursor=connection.cursor()
+    cursor.execute("create or replace view acid1_event(sid,cid,signature,sig_name,timestamp,ip_src,ip_dst,ip_proto) As select iphdr.sid,iphdr.cid,event.signature,signature.sig_name,event.timestamp,iphdr.ip_src,iphdr.ip_dst,iphdr.ip_proto from iphdr,event,signature where iphdr.sid=event.sid and iphdr.cid=event.cid and event.signature=signature.sig_id")
+
 def shwAlert():
+    treeviewAlert.delete(*treeviewAlert.get_children())
     connection=MySQLdb.connect(host="localhost",user="snort",passwd="MySqlSNORTpassword",db="snort")
     cursor=connection.cursor()
-    sql="SELECT sid, cid, signature, sig_name, sig_class_id, sig_priority, timestamp, inet_ntoa(ip_src), inet_ntoa(ip_dst), ip_proto, layer4_sport, layer4_dport FROM acid_event"
+    sql="SELECT sid, cid, signature, sig_name, timestamp, inet_ntoa(ip_src), inet_ntoa(ip_dst), ip_proto FROM acid1_event ORDER BY cid DESC"
     cursor.execute(sql)
     data=cursor.fetchall()
     for row in data:
@@ -602,7 +608,7 @@ def lsAlerttcp():
     connection=MySQLdb.connect(host="localhost",user="snort",passwd="MySqlSNORTpassword",db="snort")
     cursor=connection.cursor()
 
-    sql="SELECT sid, cid, signature, sig_name, timestamp, inet_ntoa(ip_src), inet_ntoa(ip_dst), ip_proto FROM acid1_event WHERE ip_proto = 6"
+    sql="SELECT sid, cid, signature, sig_name, timestamp, inet_ntoa(ip_src), inet_ntoa(ip_dst), ip_proto FROM acid1_event WHERE ip_proto = 6 ORDER BY cid DESC" 
     cursor.execute(sql)
     data=cursor.fetchall()
 
@@ -614,7 +620,7 @@ def lsAlerticmp():
     connection=MySQLdb.connect(host="localhost",user="snort",passwd="MySqlSNORTpassword",db="snort")
     cursor=connection.cursor()
 
-    sql="SELECT sid, cid, signature, sig_name, timestamp, inet_ntoa(ip_src), inet_ntoa(ip_dst), ip_proto FROM acid1_event WHERE ip_proto = 1"
+    sql="SELECT sid, cid, signature, sig_name, timestamp, inet_ntoa(ip_src), inet_ntoa(ip_dst), ip_proto FROM acid1_event WHERE ip_proto = 1 ORDER BY cid DESC"
     cursor.execute(sql)
     data=cursor.fetchall()
 
@@ -659,7 +665,7 @@ def lsAlertFilter():
         proque = str("AND ip_proto LIKE '%"+lsipproto.get()+"%'")
         print proque
 
-    sql =("SELECT sid,cid,signature,sig_name,timestamp,ip_src,ip_dst,ip_proto FROM acid1_event WHERE cid>-1 %s %s %s %s %s %s %s ORDER BY cid DESC")%(sidque,sigque,signameque,srcque,dstque,dateque,proque)
+    sql =("SELECT sid,cid,signature,sig_name,timestamp,inet_ntoa(ip_src), inet_ntoa(ip_dst),ip_proto FROM acid1_event WHERE cid>-1 %s %s %s %s %s %s %s ORDER BY cid DESC")%(sidque,sigque,signameque,srcque,dstque,dateque,proque)
     cursor.execute(sql)
     data=cursor.fetchall()
     for row in data:
@@ -1508,31 +1514,23 @@ labelFrameAlertLogE.grid(column=0,row=1,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tki
 labelFrameAlertLogE.grid_columnconfigure(0,weight=1)
 labelFrameAlertLogE.grid_rowconfigure(0,weight=1)
 
-treeviewAlert=ttk.Treeview(labelFrameAlertLogE,columns=["sid","cid","signature","sig_name","sig_class_id","sig_priority","timestamp","ip_src","ip_dst","ip_proto","layer4_sport","layer4_dport"],selectmode="browse",show="headings")
+treeviewAlert=ttk.Treeview(labelFrameAlertLogE,columns=["sid","cid","signature","sig_name","timestamp","ip_src","ip_dst","ip_proto"],selectmode="browse",show="headings")
 treeviewAlert.heading("sid",text="SID")
-treeviewAlert.column("sid",width=30)
+treeviewAlert.column("sid",width=90)
 treeviewAlert.heading("cid",text="CID")
-treeviewAlert.column("cid",width=30)
+treeviewAlert.column("cid",width=90)
 treeviewAlert.heading("signature",text="Sig")
-treeviewAlert.column("signature",width=30)
+treeviewAlert.column("signature",width=80)
 treeviewAlert.heading("sig_name",text="Signature Name")
-treeviewAlert.column("sig_name",width=700)
-treeviewAlert.heading("sig_class_id",text="SigClID")
-treeviewAlert.column("sig_class_id",width=70)
-treeviewAlert.heading("sig_priority",text="SigPri")
-treeviewAlert.column("sig_priority",width=60)
+treeviewAlert.column("sig_name",width=400)
 treeviewAlert.heading("timestamp",text="Timestamp")
-treeviewAlert.column("timestamp",width=120)
+treeviewAlert.column("timestamp",width=200)
 treeviewAlert.heading("ip_src",text="Source Address")
-treeviewAlert.column("ip_src",width=120)
+treeviewAlert.column("ip_src",width=200)
 treeviewAlert.heading("ip_dst",text="Dest Address")
-treeviewAlert.column("ip_dst",width=120)
+treeviewAlert.column("ip_dst",width=200)
 treeviewAlert.heading("ip_proto",text="Prot")
-treeviewAlert.column("ip_proto",width=40)
-treeviewAlert.heading("layer4_sport",text="SrcPt")
-treeviewAlert.column("layer4_sport",width=50)
-treeviewAlert.heading("layer4_dport",text="DestPt")
-treeviewAlert.column("layer4_dport",width=50)
+treeviewAlert.column("ip_proto",width=110)
 treeviewAlert.grid(column=0,row=0,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
 scrollbarXAlert=ttk.Scrollbar(labelFrameAlertLogE,orient="horizontal",command=treeviewAlert.xview)
@@ -1709,6 +1707,7 @@ noteBookMain.add(frameUd,text="Update")
 noteBookMain.add(frameAbt,text="About")
 
 loadSvcCfg()
+acidtable()
 shwAlert()
 rRlF()
 loadCfg()
@@ -1721,3 +1720,4 @@ refreshThread=threading.Thread(target=refrshAllStat)
 refreshThread.start()
 
 root.mainloop()
+
