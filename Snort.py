@@ -740,7 +740,7 @@ def shwAlert():
     treeviewAlert.delete(*treeviewAlert.get_children())
     connection=MySQLdb.connect(host="localhost",user="snort",passwd="MySqlSNORTpassword",db="snort")
     cursor=connection.cursor()
-    sql="SELECT sid, cid, signature, sig_name, timestamp, inet_ntoa(ip_src), inet_ntoa(ip_dst), ip_proto FROM acid1_event ORDER BY cid DESC"
+    sql="SELECT sid, cid, signature, sig_name, timestamp, inet_ntoa(ip_src), inet_ntoa(ip_dst), (CASE ip_proto WHEN '1' THEN 'ICMP' WHEN '6' THEN 'TCP' WHEN '17' THEN 'UDP' ELSE acid1_event.ip_proto END) FROM acid1_event ORDER BY cid DESC"
     cursor.execute(sql)
     data=cursor.fetchall()
     for row in data:
@@ -751,7 +751,7 @@ def lsAlerttcp():
     connection=MySQLdb.connect(host="localhost",user="snort",passwd="MySqlSNORTpassword",db="snort")
     cursor=connection.cursor()
 
-    sql="SELECT sid, cid, signature, sig_name, timestamp, inet_ntoa(ip_src), inet_ntoa(ip_dst), ip_proto FROM acid1_event WHERE ip_proto = 6 ORDER BY cid DESC" 
+    sql="SELECT sid, cid, signature, sig_name, timestamp, inet_ntoa(ip_src), inet_ntoa(ip_dst), (CASE ip_proto WHEN '1' THEN 'ICMP' WHEN '6' THEN 'TCP' WHEN '17' THEN 'UDP' ELSE acid1_event.ip_proto END) FROM acid1_event WHERE ip_proto = 6 ORDER BY cid DESC" 
     cursor.execute(sql)
     data=cursor.fetchall()
 
@@ -763,7 +763,19 @@ def lsAlerticmp():
     connection=MySQLdb.connect(host="localhost",user="snort",passwd="MySqlSNORTpassword",db="snort")
     cursor=connection.cursor()
 
-    sql="SELECT sid, cid, signature, sig_name, timestamp, inet_ntoa(ip_src), inet_ntoa(ip_dst), ip_proto FROM acid1_event WHERE ip_proto = 1 ORDER BY cid DESC"
+    sql="SELECT sid, cid, signature, sig_name, timestamp, inet_ntoa(ip_src), inet_ntoa(ip_dst), (CASE ip_proto WHEN '1' THEN 'ICMP' WHEN '6' THEN 'TCP' WHEN '17' THEN 'UDP' ELSE acid1_event.ip_proto END) FROM acid1_event WHERE ip_proto = 1 ORDER BY cid DESC"
+    cursor.execute(sql)
+    data=cursor.fetchall()
+
+    for row in data:
+        treeviewAlert.insert("","end",values = row)
+
+def lsAlertudp():
+    treeviewAlert.delete(*treeviewAlert.get_children())
+    connection=MySQLdb.connect(host="localhost",user="snort",passwd="MySqlSNORTpassword",db="snort")
+    cursor=connection.cursor()
+
+    sql="SELECT sid, cid, signature, sig_name, timestamp, inet_ntoa(ip_src), inet_ntoa(ip_dst), (CASE ip_proto WHEN '1' THEN 'ICMP' WHEN '6' THEN 'TCP' WHEN '17' THEN 'UDP' ELSE acid1_event.ip_proto END) as ip_proto FROM acid1_event WHERE ip_proto = 17 ORDER BY cid DESC"
     cursor.execute(sql)
     data=cursor.fetchall()
 
@@ -808,7 +820,7 @@ def lsAlertFilter():
         proque = str("AND ip_proto LIKE '%"+lsipproto.get()+"%'")
         print proque
 
-    sql =("SELECT sid,cid,signature,sig_name,timestamp,inet_ntoa(ip_src), inet_ntoa(ip_dst),ip_proto FROM acid1_event WHERE cid>-1 %s %s %s %s %s %s %s ORDER BY cid DESC")%(sidque,sigque,signameque,srcque,dstque,dateque,proque)
+    sql =("SELECT sid,cid,signature,sig_name,timestamp,inet_ntoa(ip_src), inet_ntoa(ip_dst),(CASE ip_proto WHEN '1' THEN 'ICMP' WHEN '6' THEN 'TCP' WHEN '17' THEN 'UDP' ELSE acid1_event.ip_proto END) FROM acid1_event WHERE cid>-1 %s %s %s %s %s %s %s ORDER BY cid DESC")%(sidque,sigque,signameque,srcque,dstque,dateque,proque)
     cursor.execute(sql)
     data=cursor.fetchall()
     for row in data:
@@ -1068,6 +1080,7 @@ root.grid_rowconfigure(0,weight=1)
 style=ttk.Style()
 style.configure("restartSnort.TButton",font=("",),foreground="orange",background="gray1")
 style.map("restartSnort.TButton",foreground=[('pressed','orange'),('active','orange')],background=[('pressed','gray20'),('active','gray10')])
+
 
 appLoc=Tkinter.StringVar()
 cfgLoc=Tkinter.StringVar()
@@ -1501,16 +1514,20 @@ labelFrameAlertLogVSetting.grid(column=0,row=0,ipadx=5,ipady=5,padx=5,pady=5,sti
 labelFrameAlertLogVSetting.grid_columnconfigure(0,weight=1)
 labelFrameAlertLogVSetting.grid_columnconfigure(1,weight=1)
 labelFrameAlertLogVSetting.grid_columnconfigure(2,weight=1)
+labelFrameAlertLogVSetting.grid_columnconfigure(3,weight=1)
 labelFrameAlertLogVSetting.grid_rowconfigure(0,weight=1)
 
-buttonlsAlerttcp=ttk.Button(labelFrameAlertLogVSetting,text="All protocol traffic alert",command=shwAlert)
-buttonlsAlerttcp.grid(column=0,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+buttonlsAlertall=ttk.Button(labelFrameAlertLogVSetting,text="All protocol traffic alert",command=shwAlert)
+buttonlsAlertall.grid(column=0,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
 buttonlsAlerttcp=ttk.Button(labelFrameAlertLogVSetting,text="TCP traffic alert",command=lsAlerttcp)
 buttonlsAlerttcp.grid(column=1,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
-buttonlsAlerttcp=ttk.Button(labelFrameAlertLogVSetting,text="ICMP traffic alert",command=lsAlerticmp)
-buttonlsAlerttcp.grid(column=2,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+buttonlsAlertudp=ttk.Button(labelFrameAlertLogVSetting,text="UDP traffic alert",command=lsAlertudp)
+buttonlsAlertudp.grid(column=2,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+
+buttonlsAlerticmp=ttk.Button(labelFrameAlertLogVSetting,text="ICMP traffic alert",command=lsAlerticmp)
+buttonlsAlerticmp.grid(column=3,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
 labelFrameAlertLogE=ttk.Labelframe(frameAlert,text="Alert log entries")
 labelFrameAlertLogE.grid(column=0,row=1,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
@@ -1519,21 +1536,21 @@ labelFrameAlertLogE.grid_rowconfigure(0,weight=1)
 
 treeviewAlert=ttk.Treeview(labelFrameAlertLogE,columns=["sid","cid","signature","sig_name","timestamp","ip_src","ip_dst","ip_proto"],selectmode="browse",show="headings")
 treeviewAlert.heading("sid",text="SID")
-treeviewAlert.column("sid",width=90)
+treeviewAlert.column("sid",width=30)
 treeviewAlert.heading("cid",text="CID")
-treeviewAlert.column("cid",width=90)
+treeviewAlert.column("cid",width=50)
 treeviewAlert.heading("signature",text="Sig")
-treeviewAlert.column("signature",width=80)
+treeviewAlert.column("signature",width=30)
 treeviewAlert.heading("sig_name",text="Signature Name")
-treeviewAlert.column("sig_name",width=400)
+treeviewAlert.column("sig_name",width=800)
 treeviewAlert.heading("timestamp",text="Timestamp")
-treeviewAlert.column("timestamp",width=200)
+treeviewAlert.column("timestamp",width=190)
 treeviewAlert.heading("ip_src",text="Source Address")
-treeviewAlert.column("ip_src",width=200)
+treeviewAlert.column("ip_src",width=150)
 treeviewAlert.heading("ip_dst",text="Dest Address")
-treeviewAlert.column("ip_dst",width=200)
+treeviewAlert.column("ip_dst",width=150)
 treeviewAlert.heading("ip_proto",text="Prot")
-treeviewAlert.column("ip_proto",width=110)
+treeviewAlert.column("ip_proto",width=40)
 treeviewAlert.grid(column=0,row=0,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
 scrollbarXAlert=ttk.Scrollbar(labelFrameAlertLogE,orient="horizontal",command=treeviewAlert.xview)
@@ -1552,74 +1569,93 @@ labelFrameFilter.grid_columnconfigure(2,weight=1)
 labelFrameFilter.grid_columnconfigure(3,weight=1)
 labelFrameFilter.grid_columnconfigure(4,weight=1)
 labelFrameFilter.grid_columnconfigure(5,weight=1)
+labelFrameFilter.grid_columnconfigure(6,weight=1)
 labelFrameFilter.grid_rowconfigure(0,weight=1)
 labelFrameFilter.grid_rowconfigure(1,weight=1)
 labelFrameFilter.grid_rowconfigure(2,weight=1)
 labelFrameFilter.grid_rowconfigure(3,weight=1)
 labelFrameFilter.grid_rowconfigure(4,weight=1)
 
-labellssid=ttk.Label(labelFrameFilter,text="SID:")
-labellssid.grid(column=0,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S)
+labellssid=ttk.Label(labelFrameFilter,text="Signature ID:")
+labellssid.grid(column=1,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S)
 
 entrylssid=ttk.Entry(labelFrameFilter,textvariable=lssid)
-entrylssid.grid(column=1,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+entrylssid.grid(column=2,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
 labellssignature=ttk.Label(labelFrameFilter,text="Signature:")
-labellssignature.grid(column=2,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S)
+labellssignature.grid(column=3,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S)
 
 entrylssignature=ttk.Entry(labelFrameFilter,textvariable=lssignature)
-entrylssignature.grid(column=3,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+entrylssignature.grid(column=4,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
 labellssig_name=ttk.Label(labelFrameFilter,text="Signature name:")
-labellssig_name.grid(column=4,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S)
+labellssig_name.grid(column=5,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S)
 
 entrylssig_name=ttk.Entry(labelFrameFilter,textvariable=lssigname)
-entrylssig_name.grid(column=5,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+entrylssig_name.grid(column=6,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
 labellsip_src=ttk.Label(labelFrameFilter,text="Source Internet Protocol address:")
-labellsip_src.grid(column=0,row=1,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S)
+labellsip_src.grid(column=1,row=1,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S)
 
 entrylsip_src=ttk.Entry(labelFrameFilter,textvariable=lsipsrc)
-entrylsip_src.grid(column=1,row=1,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+entrylsip_src.grid(column=2,row=1,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
 labellsip_dst=ttk.Label(labelFrameFilter,text="Destination Internet Protocol address:")
-labellsip_dst.grid(column=2,row=1,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S)
+labellsip_dst.grid(column=3,row=1,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S)
 
 entrylsip_dst=ttk.Entry(labelFrameFilter,textvariable=lsipdst)
-entrylsip_dst.grid(column=3,row=1,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+entrylsip_dst.grid(column=4,row=1,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
 labellsip_proto=ttk.Label(labelFrameFilter,text="Protocol:")
-labellsip_proto.grid(column=4,row=1,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S)
+labellsip_proto.grid(column=5,row=1,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S)
 
 entrylsip_proto=ttk.Entry(labelFrameFilter,textvariable=lsipproto)
-entrylsip_proto.grid(column=5,row=1,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+entrylsip_proto.grid(column=6,row=1,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
-labellssdate=ttk.Label(labelFrameFilter,text="Date From:")
+labellssdate=ttk.Label(labelFrameFilter,text="Alert date from:")
 labellssdate.grid(column=0,row=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S)
 
+labellssdatey=ttk.Label(labelFrameFilter,text="Year:")
+labellssdatey.grid(column=1,row=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S)
+
 entrylssdatey=ttk.Entry(labelFrameFilter,textvariable=lssdatey)
-entrylssdatey.grid(column=1,row=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+entrylssdatey.grid(column=2,row=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+
+labellssdatem=ttk.Label(labelFrameFilter,text="Month:")
+labellssdatem.grid(column=3,row=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S)
 
 entrylssdatem=ttk.Entry(labelFrameFilter,textvariable=lssdatem)
-entrylssdatem.grid(column=2,row=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+entrylssdatem.grid(column=4,row=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+
+labellssdated=ttk.Label(labelFrameFilter,text="Day:")
+labellssdated.grid(column=5,row=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S)
 
 entrylssdated=ttk.Entry(labelFrameFilter,textvariable=lssdated)
-entrylssdated.grid(column=3,row=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+entrylssdated.grid(column=6,row=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
-labellsedate=ttk.Label(labelFrameFilter,text="Date To:")
+labellsedate=ttk.Label(labelFrameFilter,text="Alert date to:")
 labellsedate.grid(column=0,row=3,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S)
 
+labellsedatey=ttk.Label(labelFrameFilter,text="Year:")
+labellsedatey.grid(column=1,row=3,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S)
+
 entrylsedatey=ttk.Entry(labelFrameFilter,textvariable=lsedatey)
-entrylsedatey.grid(column=1,row=3,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+entrylsedatey.grid(column=2,row=3,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+
+labellsedatem=ttk.Label(labelFrameFilter,text="Month:")
+labellsedatem.grid(column=3,row=3,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S)
 
 entrylsedatem=ttk.Entry(labelFrameFilter,textvariable=lsedatem)
-entrylsedatem.grid(column=2,row=3,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+entrylsedatem.grid(column=4,row=3,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+
+labellsedated=ttk.Label(labelFrameFilter,text="Day:")
+labellsedated.grid(column=5,row=3,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S)
 
 entrylsedated=ttk.Entry(labelFrameFilter,textvariable=lsedated)
-entrylsedated.grid(column=3,row=3,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+entrylsedated.grid(column=6,row=3,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
 buttonlsAlertFilter=ttk.Button(labelFrameFilter,text="Filter",command=lsAlertFilter)
-buttonlsAlertFilter.grid(column=0,row=4,columnspan=6,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+buttonlsAlertFilter.grid(column=0,row=4,columnspan=7,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
 #frameGraph=ttk.Frame(noteBookMain)
 
