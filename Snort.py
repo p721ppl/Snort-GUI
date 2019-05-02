@@ -67,12 +67,15 @@ def refreshBarnyardStat():
         labelStatBarnyardStatOut.config(text=stdout)
     
 def refrshAllStat():
-    while True:
-        refreshSnortIsEnad()
-        refreshSnortIsFled()
-        refreshBarnyardIsEnad()
-        refreshBarnyardIsFled()
-        time.sleep(1)
+    try:
+        while True:
+            refreshSnortIsEnad()
+            refreshSnortIsFled()
+            refreshBarnyardIsEnad()
+            refreshBarnyardIsFled()
+            time.sleep(1)
+    except:
+        pass
 
 def snortEnaSvc():
     snortEnaSvcO=subprocess.Popen("sudo systemctl enable snort.service",shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
@@ -579,7 +582,7 @@ def edRl():
     try:
         with open(seledRlF.get(),"r+") as rF:
             readlines=rF.readlines()
-            nRl=[]
+            nRl=["\n"]
             if seledActn.get() != "":
                 nRl.insert(len(nRl),seledActn.get())
             if seledProt.get() != "":
@@ -621,6 +624,7 @@ def edRl():
                 nRl.insert(len(nRl),fSeledPri)
             if seledMsg.get() != "" or seledRefIdSys.get() != "" or seledGId.get() != "" or seledSId.get() != "" or seledRev.get() != "" or seledClTp.get() != "" or seledPri.get() != "":
                 nRl.insert(len(nRl),")")
+            nRl.insert(len(nRl),"\n")
             readlines[intSeledRlLnNo]=" ".join(nRl)
         with open(seledRlF.get(),"w+") as wF:
             wF.writelines(readlines)
@@ -1719,4 +1723,3 @@ refreshThread=threading.Thread(target=refrshAllStat)
 refreshThread.start()
 
 root.mainloop()
-
