@@ -26,7 +26,7 @@ global seledRlLnNo
 seledRlLnNo=0
 
 def refreshSnortIsEnad():
-    snortIsEnaOut=subprocess.Popen("systemctl is-enabled snort.service",shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+    snortIsEnaOut=subprocess.Popen("sudo systemctl is-enabled snort.service",shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
     stdout,stderr=snortIsEnaOut.communicate()
     if stdout == "":
         labelStatSnortIsEnaOut.config(text="Unknown")
@@ -34,7 +34,7 @@ def refreshSnortIsEnad():
         labelStatSnortIsEnaOut.config(text=re.sub("\n","",stdout))
        
 def refreshSnortIsFled():
-    snortIsFledOut=subprocess.Popen("systemctl is-failed snort.service",shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+    snortIsFledOut=subprocess.Popen("sudo systemctl is-failed snort.service",shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
     stdout,stderr=snortIsFledOut.communicate()
     if stdout == "":
         labelStatSnortIsFledOut.config(text="Unknown")
@@ -42,7 +42,7 @@ def refreshSnortIsFled():
         labelStatSnortIsFledOut.config(text=re.sub("\n","",stdout))
 
 def refreshBarnyardIsEnad():
-    barnyardIsEnaOut=subprocess.Popen("systemctl is-enabled barnyard2.service",shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+    barnyardIsEnaOut=subprocess.Popen("sudo systemctl is-enabled barnyard2.service",shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
     stdout,stderr=barnyardIsEnaOut.communicate()
     if stdout == "":
         labelStatBarnyardIsEnaOut.config(text="Unknown")
@@ -50,7 +50,7 @@ def refreshBarnyardIsEnad():
         labelStatBarnyardIsEnaOut.config(text=re.sub("\n","",stdout))
     
 def refreshBarnyardIsFled():
-    barnyardIsFledOut=subprocess.Popen("systemctl is-failed barnyard2.service",shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+    barnyardIsFledOut=subprocess.Popen("sudo systemctl is-failed barnyard2.service",shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
     stdout,stderr=barnyardIsFledOut.communicate()
     if stdout == "":
         labelStatBarnyardIsFledOut.config(text="Unknown")
@@ -59,7 +59,7 @@ def refreshBarnyardIsFled():
 
 
 def refreshBarnyardStat():
-    barnyardStatOut=subprocess.Popen("systemctl status barnyard2.service",shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+    barnyardStatOut=subprocess.Popen("sudo systemctl status barnyard2.service",shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
     stdout,stderr=barnyardStatOut.communicate()
     if stdout == "":
         labelStatBarnyardStatOut.config(text="Unknown")
@@ -178,7 +178,7 @@ def snortSvcStatDetTLvl():
     labelSnortSvcStatDetO=ttk.Label(labelFrameSnortSvcStatDet)
     labelSnortSvcStatDetO.grid(column=0,row=0,columnspan=2,ipadx=5,ipady=5,padx=5,pady=5)
 
-    ckSnortSvcStatDet=subprocess.Popen("systemctl status snort.service",shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+    ckSnortSvcStatDet=subprocess.Popen("sudo systemctl status snort.service",shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
     stdout,stderr=ckSnortSvcStatDet.communicate()
     if stdout == "":
         labelSnortSvcStatDetO.config(text="Unknown")
@@ -199,7 +199,7 @@ def barnyardSvcStatDetTLvl():
     labelBarnyardSvcStatDetO=ttk.Label(labelFrameBarnyardSvcStatDet)
     labelBarnyardSvcStatDetO.grid(column=0,row=0,columnspan=2,ipadx=5,ipady=5,padx=5,pady=5)
 
-    ckBarnyardSvcStatDet=subprocess.Popen("systemctl status barnyard2.service",shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+    ckBarnyardSvcStatDet=subprocess.Popen("sudo systemctl status barnyard2.service",shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
     stdout,stderr=ckBarnyardSvcStatDet.communicate()
     if stdout == "":
         labelBarnyardSvcStatDetO.config(text="Unknown")
@@ -656,6 +656,25 @@ def treeviewClick(event):
         seledPri.set(itemLs[16])
     return seledRlLnNo
 
+def netVarHelpTLvl():
+    toplevelNetVarHelp=Tkinter.Toplevel()
+    toplevelNetVarHelp.title("Help - Snort IDS GUI")
+
+    labelFrameIPNPtLs=ttk.Labelframe(toplevelNetVarHelp,text="IP and Port lists")
+    labelFrameIPNPtLs.grid(column=0,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+
+    textIPNPtLs=ScrolledText.ScrolledText(labelFrameIPNPtLs)
+    textIPNPtLs.grid(column=0,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+
+    try:
+        with open("/usr/local/share/doc/snort/README.variables","r")as logF:
+            textIPNPtLs.insert(Tkinter.INSERT,logF.read())
+    except:
+        tkMessageBox.showerror("Error","Unable to open the description file.")
+
+    buttonNetVarHelpTLvl=ttk.Button(labelFrameIPNPtLs,text="Close",command=toplevelNetVarHelp.destroy)
+    buttonNetVarHelpTLvl.grid(column=0,row=1,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+
 def askCfgFLoc():
     openCfgFLoc=tkFileDialog.askopenfilename(initialdir="/etc/snort/",title="Select configuration file",filetypes=(("Configuration files","*.conf"),("All files","*.*")))
     seledCfgF.set(openCfgFLoc)
@@ -981,6 +1000,71 @@ def edRlTLvl():
     buttonEdRl=ttk.Button(labelFrameEdRl,text="Edit rule",command=edRl)
     buttonEdRl.grid(column=0,row=18,columnspan=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
+def loadPulledPorkcfg():
+    try:
+        with open("/etc/snort/pulledpork.conf","r") as rF:
+            for line in rF.readlines():
+                if re.match("\s*rule_url=https:\/\/www.snort.org\/reg-rules\/\|snortrules-snapshot.tar.gz\|.*",line):
+                    snortVRTRl.set(1)
+                if re.match("\s*#*\s*rule_url=https:\/\/www.snort.org\/reg-rules\/\|snortrules-snapshot.tar.gz\|.*",line):
+                    snortOinkMaC.set(re.sub("\n","",re.sub("\s*#*\s*rule_url=https:\/\/www.snort.org\/reg-rules\/\|snortrules-snapshot.tar.gz\|","",line)))
+                if re.match("\s*rule_url=https:\/\/snort.org\/downloads\/community\/\|community-rules.tar.gz\|Community",line):
+                    snortCmtyRl.set(1)
+                if re.match("\s*rule_url=https:\/\/rules.emergingthreats.net\/\|emerging.rules.tar.gz\|open-nogpl",line):
+                    eTOpRl.set(1)
+                if re.match("\s*rule_url=https:\/\/rules.emergingthreatspro.com\/\|etpro.rules.tar.gz\|.*",line):
+                    eTProRl.set(1)
+                if re.match("\s*#*\s*rule_url=https:\/\/rules.emergingthreatspro.com\/\|etpro.rules.tar.gz\|.*",line):
+                    eTProOinkMaC.set(re.sub("\n","",re.sub("\s*#*\s*rule_url=https:\/\/rules.emergingthreatspro.com\/\|etpro.rules.tar.gz\|","",line)))
+
+    except IOError:
+        tkMessageBox.showerror("Error","No such Pulled Pork configuration file.")
+        
+def pasSnortOinkMaC():
+    snortOinkMaC.set(root.clipboard_get())
+
+def pasETProOinkMaC():
+    eTProOinkMaC.set(root.clipboard_get())
+
+def svPulledPorkcfg():
+    try:
+        with open("/etc/snort/pulledpork.conf","r+") as rF:
+            readlines=rF.readlines()
+            lnNo=0
+            for line in readlines:
+                if re.match("\s*#*\s*rule_url=https:\/\/www.snort.org\/reg-rules\/\|snortrules-snapshot.tar.gz\|.*",line):
+                    if snortVRTRl.get()==1:
+                        nSnortVRTRl="rule_url=https://www.snort.org/reg-rules/|snortrules-snapshot.tar.gz|"+snortOinkMaC.get()
+                    else:
+                        nSnortVRTRl="#rule_url=https://www.snort.org/reg-rules/|snortrules-snapshot.tar.gz|"+snortOinkMaC.get()
+                    readlines[lnNo]=re.sub("\s*#*\s*rule_url=https:\/\/www.snort.org\/reg-rules\/\|snortrules-snapshot.tar.gz\|.*",nSnortVRTRl,line)
+                elif re.match("\s*#*\s*rule_url=https:\/\/snort.org\/downloads\/community\/\|community-rules.tar.gz\|Community",line):
+                    if snortCmtyRl.get()==1:
+                        nSnortCmtyRl="rule_url=https://snort.org/downloads/community/|community-rules.tar.gz|Community"
+                    else:
+                        nSnortCmtyRl="#rule_url=https://snort.org/downloads/community/|community-rules.tar.gz|Community"
+                    readlines[lnNo]=re.sub("\s*#*\s*rule_url=https:\/\/snort.org\/downloads\/community\/\|community-rules.tar.gz\|Community",nSnortCmtyRl,line)
+                elif re.match("\s*#*\s*rule_url=https:\/\/rules.emergingthreats.net\/\|emerging.rules.tar.gz\|open-nogpl",line):
+                    if eTOpRl.get()==1:
+                        nETOpRl="rule_url=https://rules.emergingthreats.net/|emerging.rules.tar.gz|open-nogpl"
+                    else:
+                        nETOpRl="#rule_url=https://rules.emergingthreats.net/|emerging.rules.tar.gz|open-nogpl"
+                    readlines[lnNo]=re.sub("\s*#*\s*rule_url=https:\/\/rules.emergingthreats.net\/\|emerging.rules.tar.gz\|open-nogpl",nETOpRl,line)
+                elif re.match("\s*#*\s*rule_url=https:\/\/rules.emergingthreatspro.com\/\|etpro.rules.tar.gz\|.*",line):
+                    if eTProRl.get()==1:
+                        nETProRl="rule_url=https://rules.emergingthreatspro.com/|etpro.rules.tar.gz|"+eTProOinkMaC.get()
+                    else:
+                        nETProRl="#rule_url=https://rules.emergingthreatspro.com/|etpro.rules.tar.gz|"+eTProOinkMaC.get()
+                    readlines[lnNo]=re.sub("\s*#*\s*rule_url=https:\/\/rules.emergingthreatspro.com\/\|etpro.rules.tar.gz\|.*",nETProRl,line)
+                lnNo=lnNo+1
+        with open("/etc/snort/pulledpork.conf","w+") as wF:
+            wF.writelines(readlines)
+    except IOError:
+        tkMessageBox.showerror("Error","No such Pulled Pork configuration file.")
+    else:
+        tkMessageBox.showinfo("Information","The new setting is successfully saved in the configuration file.")
+    loadPulledPorkcfg()
+
 def rLastRlsetUdTm():
     with open("/var/log/sid_changes.log","r") as logF:
         logFLnLs=logF.readlines()
@@ -996,7 +1080,12 @@ def udRlTLvl():
     ToplevelUdRl.grid_rowconfigure(0,weight=1)
 
     labelFrameUdRlSetTLvl=ttk.Labelframe(ToplevelUdRl,text="Rule update")
-    labelFrameUdRlSetTLvl.grid(column=0,row=3,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+    labelFrameUdRlSetTLvl.grid(column=0,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+    labelFrameUdRlSetTLvl.grid_columnconfigure(0,weight=1)
+    labelFrameUdRlSetTLvl.grid_rowconfigure(0,weight=1)
+    labelFrameUdRlSetTLvl.grid_rowconfigure(1,weight=1)
+    labelFrameUdRlSetTLvl.grid_rowconfigure(2,weight=1)
+    labelFrameUdRlSetTLvl.grid_rowconfigure(3,weight=1)
 
     labelUdStat=ttk.Label(labelFrameUdRlSetTLvl,text="Checking latest rule updates...")
     labelUdStat.grid(column=0,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
@@ -1006,7 +1095,7 @@ def udRlTLvl():
 
     progressbarUdRl.start()
     
-    pulledPorkUdRl=subprocess.Popen("sudo /usr/local/bin/pulledpork.pl -c /etc/snort/pulledpork.conf -l",shell=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
+    pulledPorkUdRl=subprocess.Popen("sudo  pulledpork.pl -c /etc/snort/pulledpork.conf -l",shell=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
     stdout,stderr=pulledPorkUdRl.communicate()
 
     separatorUdRl=ttk.Separator(labelFrameUdRlSetTLvl)
@@ -1029,7 +1118,6 @@ def udRl():
 def vLogTLvl():
     toplevelVLog=Tkinter.Toplevel()
     toplevelVLog.title("View log - Snort IDS GUI")
-    toplevelVLog.attributes("-topmost",1)
 
     labelFrameRlSetLog=ttk.Labelframe(toplevelVLog,text="Rule set log")
     labelFrameRlSetLog.grid(column=0,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
@@ -1062,20 +1150,36 @@ def shwSnortVer():
     stdout,stderr=snortVerOut.communicate()
     labelFrameSnortInfoOut.config(text=stdout)
 
+def oSnortOWeb():
+    webbrowser.open("https://www.snort.org/")
+
 def shwBarnyardVer():
     barnyardVerOut=subprocess.Popen("barnyard2 -V",shell=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
     stdout,stderr=barnyardVerOut.communicate()
     labelFrameBarnyardInfoOut.config(text=stdout)
+
+def oBarnyardOWeb():
+    webbrowser.open("https://www.securixlive.com/")
+
+def oBarnyardGHWeb():
+    webbrowser.open("https://github.com/firnsy/barnyard2/")
+
+def oBarnyardOEMail():
+    webbrowser.open("mailto:firnsy@securixlive.com")
 
 def shwPulledPorkVer():
     verO=subprocess.Popen("pulledpork.pl -V",shell=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
     stdout,stderr=verO.communicate()
     labelPulledPorkInfoOut.config(text=stdout)
 
+def oPulledPorkGHWeb():
+    webbrowser.open("https://github.com/shirkdog/pulledpork/")
+
 root=Tkinter.Tk()
 root.title("Snort Intrusion Detection System Graphical User Interface")
 root.grid_columnconfigure(0,weight=1)
 root.grid_rowconfigure(0,weight=1)
+root.grid_rowconfigure(1,weight=99)
 
 style=ttk.Style()
 style.configure("restartSnort.TButton",font=("",),foreground="orange",background="gray1")
@@ -1150,6 +1254,13 @@ lsedatem=Tkinter.IntVar()
 lsedated=Tkinter.IntVar()
 lsipproto=Tkinter.StringVar()
 
+snortVRTRl=Tkinter.IntVar()
+snortOinkMaC=Tkinter.StringVar()
+snortCmtyRl=Tkinter.IntVar()
+eTOpRl=Tkinter.IntVar()
+eTProRl=Tkinter.IntVar()
+eTProOinkMaC=Tkinter.StringVar()
+
 noteBookMain=ttk.Notebook(root)
 noteBookMain.grid(column=0,row=1,columnspan=4,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 noteBookMain.grid_columnconfigure(0,weight=1)
@@ -1177,6 +1288,13 @@ labelFrameSnortStat=ttk.Labelframe(frameHome,text="Snort service Status")
 labelFrameSnortStat.grid(column=0,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 labelFrameSnortStat.grid_columnconfigure(0,weight=1)
 labelFrameSnortStat.grid_columnconfigure(1,weight=1)
+labelFrameSnortStat.grid_rowconfigure(0,weight=1)
+labelFrameSnortStat.grid_rowconfigure(1,weight=1)
+labelFrameSnortStat.grid_rowconfigure(2,weight=1)
+labelFrameSnortStat.grid_rowconfigure(3,weight=1)
+labelFrameSnortStat.grid_rowconfigure(4,weight=1)
+labelFrameSnortStat.grid_rowconfigure(5,weight=1)
+labelFrameSnortStat.grid_rowconfigure(6,weight=1)
 
 labelSnortStrtUTyp=ttk.Label(labelFrameSnortStat,text="Snort service startup type:")
 labelSnortStrtUTyp.grid(column=0,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
@@ -1215,6 +1333,13 @@ labelFrameBarnyardStat=ttk.Labelframe(frameHome,text="Barnyard service status")
 labelFrameBarnyardStat.grid(column=1,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 labelFrameBarnyardStat.grid_columnconfigure(0,weight=1)
 labelFrameBarnyardStat.grid_columnconfigure(1,weight=1)
+labelFrameBarnyardStat.grid_rowconfigure(0,weight=1)
+labelFrameBarnyardStat.grid_rowconfigure(1,weight=1)
+labelFrameBarnyardStat.grid_rowconfigure(2,weight=1)
+labelFrameBarnyardStat.grid_rowconfigure(3,weight=1)
+labelFrameBarnyardStat.grid_rowconfigure(4,weight=1)
+labelFrameBarnyardStat.grid_rowconfigure(5,weight=1)
+labelFrameBarnyardStat.grid_rowconfigure(6,weight=1)
 
 labelBarnyardSvcStat=ttk.Label(labelFrameBarnyardStat,text="Barnyard service status:")
 labelBarnyardSvcStat.grid(column=0,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
@@ -1232,28 +1357,37 @@ separatorBarnyard=ttk.Separator(labelFrameBarnyardStat)
 separatorBarnyard.grid(column=0,row=2,columnspan=3,sticky=Tkinter.E+Tkinter.W)
 
 labelBarnyardSvcStat=ttk.Label(labelFrameBarnyardStat,text="Barnyard service status:")
-labelBarnyardSvcStat.grid(column=0,row=4,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
+labelBarnyardSvcStat.grid(column=0,row=3,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
 
 labelStatBarnyardIsFledOut=ttk.Label(labelFrameBarnyardStat)
-labelStatBarnyardIsFledOut.grid(column=1,row=4,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.W)
+labelStatBarnyardIsFledOut.grid(column=1,row=3,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.W)
 
 buttonStrtBarnyard=ttk.Button(labelFrameBarnyardStat,text="Start",command=barnyardStrtSvc)
-buttonStrtBarnyard.grid(column=0,row=5,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E+Tkinter.W)
+buttonStrtBarnyard.grid(column=0,row=4,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E+Tkinter.W)
 
 buttonStBarnyard=ttk.Button(labelFrameBarnyardStat,text="Stop",command=barnyardStSvc)
-buttonStBarnyard.grid(column=1,row=5,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E+Tkinter.W)
+buttonStBarnyard.grid(column=1,row=4,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E+Tkinter.W)
 
 separatorSecBarnyardStat=ttk.Separator(labelFrameBarnyardStat)
-separatorSecBarnyardStat.grid(column=0,row=6,columnspan=2,sticky=Tkinter.E+Tkinter.W)
+separatorSecBarnyardStat.grid(column=0,row=5,columnspan=2,sticky=Tkinter.E+Tkinter.W)
 
 buttonSnortDet=ttk.Button(labelFrameBarnyardStat,text="Service Detail",command=barnyardSvcStatDetTLvl)
-buttonSnortDet.grid(column=0,row=7,columnspan=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E+Tkinter.W)
+buttonSnortDet.grid(column=0,row=6,columnspan=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E+Tkinter.W)
 
 labelFrameSetting=ttk.Labelframe(frameHome,text="Snort service configuration")
-labelFrameSetting.grid(column=0,row=2,columnspan=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+labelFrameSetting.grid(column=0,row=1,columnspan=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 labelFrameSetting.grid_columnconfigure(0,weight=1)
-labelFrameSetting.grid_columnconfigure(1,weight=100)
+labelFrameSetting.grid_columnconfigure(1,weight=98)
 labelFrameSetting.grid_columnconfigure(2,weight=1)
+labelFrameSetting.grid_rowconfigure(0,weight=1)
+labelFrameSetting.grid_rowconfigure(1,weight=1)
+labelFrameSetting.grid_rowconfigure(2,weight=1)
+labelFrameSetting.grid_rowconfigure(3,weight=1)
+labelFrameSetting.grid_rowconfigure(4,weight=1)
+labelFrameSetting.grid_rowconfigure(5,weight=1)
+labelFrameSetting.grid_rowconfigure(6,weight=1)
+labelFrameSetting.grid_rowconfigure(7,weight=1)
+labelFrameSetting.grid_rowconfigure(8,weight=1)
 
 labelAppLoc=ttk.Label(labelFrameSetting,text="Snort application:")
 labelAppLoc.grid(column=0,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
@@ -1310,13 +1444,15 @@ frameCfg=ttk.Frame(noteBookMain)
 frameCfg.grid(column=0,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 frameCfg.grid_columnconfigure(0,weight=1)
 frameCfg.grid_rowconfigure(0,weight=1)
-frameCfg.grid_rowconfigure(1,weight=1)
+frameCfg.grid_rowconfigure(1,weight=99)
 
 labelFrameCfgFSelion=ttk.Labelframe(frameCfg,text="Configuration file selection")
 labelFrameCfgFSelion.grid(column=0,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 labelFrameCfgFSelion.grid_columnconfigure(0,weight=1)
-labelFrameCfgFSelion.grid_columnconfigure(1,weight=100)
+labelFrameCfgFSelion.grid_columnconfigure(1,weight=98)
 labelFrameCfgFSelion.grid_columnconfigure(2,weight=1)
+labelFrameCfgFSelion.grid_rowconfigure(0,weight=1)
+labelFrameCfgFSelion.grid_rowconfigure(1,weight=1)
 
 labelCfgF=ttk.Label(labelFrameCfgFSelion,text="Configuration file:")
 labelCfgF.grid(column=0,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
@@ -1334,76 +1470,110 @@ buttonReloadCfgF.grid(column=0,row=1,columnspan=3,ipadx=5,ipady=5,padx=5,pady=5,
 labelFrameNetVar=ttk.Labelframe(frameCfg,text="Network variable")
 labelFrameNetVar.grid(column=0,row=1,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 labelFrameNetVar.grid_columnconfigure(0,weight=1)
-labelFrameNetVar.grid_columnconfigure(1,weight=100)
+labelFrameNetVar.grid_columnconfigure(1,weight=98)
+labelFrameNetVar.grid_columnconfigure(2,weight=1)
+labelFrameNetVar.grid_rowconfigure(0,weight=1)
+labelFrameNetVar.grid_rowconfigure(1,weight=1)
+labelFrameNetVar.grid_rowconfigure(2,weight=1)
+labelFrameNetVar.grid_rowconfigure(3,weight=1)
+labelFrameNetVar.grid_rowconfigure(4,weight=1)
+labelFrameNetVar.grid_rowconfigure(5,weight=1)
+labelFrameNetVar.grid_rowconfigure(6,weight=1)
+labelFrameNetVar.grid_rowconfigure(7,weight=1)
+labelFrameNetVar.grid_rowconfigure(8,weight=1)
+labelFrameNetVar.grid_rowconfigure(9,weight=1)
+labelFrameNetVar.grid_rowconfigure(10,weight=1)
+labelFrameNetVar.grid_rowconfigure(11,weight=1)
+labelFrameNetVar.grid_rowconfigure(12,weight=1)
+labelFrameNetVar.grid_rowconfigure(13,weight=1)
+labelFrameNetVar.grid_rowconfigure(14,weight=1)
+
+labelIPPptH=ttk.Label(labelFrameNetVar,text="IP variable example:")
+labelIPPptH.grid(column=0,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S)
+
+labelIPPptE=ttk.Label(labelFrameNetVar,text="[1.1.1.1,2.2.2.0/24,![2.2.2.2,2.2.2.3]]")
+labelIPPptE.grid(column=1,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+
+buttonVLog=ttk.Button(labelFrameNetVar,text="Help",command=netVarHelpTLvl)
+buttonVLog.grid(column=2,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+
+separatorNetVarPpt=ttk.Separator(labelFrameNetVar)
+separatorNetVarPpt.grid(column=0,row=1,columnspan=3,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
 labelHomeNet=ttk.Label(labelFrameNetVar,text="Home network:")
-labelHomeNet.grid(column=0,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
+labelHomeNet.grid(column=0,row=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
 
-entryHomeNet=ttk.Entry(labelFrameNetVar,textvariable=homeNetAdd)
-entryHomeNet.grid(column=1,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+comboBoxHomeNet=ttk.Combobox(labelFrameNetVar,textvariable=homeNetAdd,values=["any","10.0.0.0/24","192.168.1.0/24"])
+comboBoxHomeNet.grid(column=1,row=2,columnspan=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
 labelExtNet=ttk.Label(labelFrameNetVar,text="External network:")
-labelExtNet.grid(column=0,row=1,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
+labelExtNet.grid(column=0,row=3,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
 
-entryExtNet=ttk.Entry(labelFrameNetVar,textvariable=extNetAdd)
-entryExtNet.grid(column=1,row=1,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+comboBoxExtNet=ttk.Combobox(labelFrameNetVar,textvariable=extNetAdd,values=["any","!$HOME_NET"])
+comboBoxExtNet.grid(column=1,row=3,columnspan=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+
+separatorNetVarNet=ttk.Separator(labelFrameNetVar)
+separatorNetVarNet.grid(column=0,row=4,columnspan=3,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
 labelDNSS=ttk.Label(labelFrameNetVar,text="DNS Servers:")
-labelDNSS.grid(column=0,row=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
+labelDNSS.grid(column=0,row=5,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
 
-entryDNSS=ttk.Entry(labelFrameNetVar,textvariable=dnsSIpAdd)
-entryDNSS.grid(column=1,row=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+comboBoxDNSS=ttk.Combobox(labelFrameNetVar,textvariable=dnsSIpAdd,values=["$HOME_NET"])
+comboBoxDNSS.grid(column=1,row=5,columnspan=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
 labelSMTPS=ttk.Label(labelFrameNetVar,text="SMTP Servers:")
-labelSMTPS.grid(column=0,row=3,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
+labelSMTPS.grid(column=0,row=6,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
 
-entrySMTPS=ttk.Entry(labelFrameNetVar,textvariable=smtpSAdd)
-entrySMTPS.grid(column=1,row=3,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+comboBoxSMTPS=ttk.Combobox(labelFrameNetVar,textvariable=smtpSAdd,values=["$HOME_NET"])
+comboBoxSMTPS.grid(column=1,row=6,columnspan=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
 labelHTTPS=ttk.Label(labelFrameNetVar,text="HTTP Servers:")
-labelHTTPS.grid(column=0,row=4,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
+labelHTTPS.grid(column=0,row=7,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
 
-entryHTTPS=ttk.Entry(labelFrameNetVar,textvariable=httpSAdd)
-entryHTTPS.grid(column=1,row=4,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+comboBoxHTTPS=ttk.Combobox(labelFrameNetVar,textvariable=httpSAdd,values=["$HOME_NET"])
+comboBoxHTTPS.grid(column=1,row=7,columnspan=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
 labelSQLS=ttk.Label(labelFrameNetVar,text="SQL Servers:")
-labelSQLS.grid(column=0,row=5,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
+labelSQLS.grid(column=0,row=8,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
 
-entrySQLS=ttk.Entry(labelFrameNetVar,textvariable=sqlSAdd)
-entrySQLS.grid(column=1,row=5,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+comboBoxSQLS=ttk.Combobox(labelFrameNetVar,textvariable=sqlSAdd,values=["$HOME_NET"])
+comboBoxSQLS.grid(column=1,row=8,columnspan=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
 labelTelnetS=ttk.Label(labelFrameNetVar,text="Telnet Servers:")
-labelTelnetS.grid(column=0,row=6,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
+labelTelnetS.grid(column=0,row=9,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
 
-entryTelnetS=ttk.Entry(labelFrameNetVar,textvariable=telnetSAdd)
-entryTelnetS.grid(column=1,row=6,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+comboBoxTelnetS=ttk.Combobox(labelFrameNetVar,textvariable=telnetSAdd,values=["$HOME_NET"])
+comboBoxTelnetS.grid(column=1,row=9,columnspan=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
 labelSSHS=ttk.Label(labelFrameNetVar,text="SSH Servers:")
-labelSSHS.grid(column=0,row=7,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
+labelSSHS.grid(column=0,row=10,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
 
-entrySSHS=ttk.Entry(labelFrameNetVar,textvariable=sshSAdd)
-entrySSHS.grid(column=1,row=7,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+comboBoxSSHS=ttk.Combobox(labelFrameNetVar,textvariable=sshSAdd,values=["$HOME_NET"])
+comboBoxSSHS.grid(column=1,row=10,columnspan=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
 labelFTPS=ttk.Label(labelFrameNetVar,text="FTP Servers:")
-labelFTPS.grid(column=0,row=8,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
+labelFTPS.grid(column=0,row=11,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
 
-entryFTPS=ttk.Entry(labelFrameNetVar,textvariable=ftpSAdd)
-entryFTPS.grid(column=1,row=8,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+comboBoxFTPS=ttk.Combobox(labelFrameNetVar,textvariable=ftpSAdd,values=["$HOME_NET"])
+comboBoxFTPS.grid(column=1,row=11,columnspan=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
 labelSIPS=ttk.Label(labelFrameNetVar,text="SIP Servers:")
-labelSIPS.grid(column=0,row=9,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
+labelSIPS.grid(column=0,row=12,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
 
-entrySIPS=ttk.Entry(labelFrameNetVar,textvariable=sipSAdd)
-entrySIPS.grid(column=1,row=9,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+comboBoxSIPS=ttk.Combobox(labelFrameNetVar,textvariable=sipSAdd,values=["$HOME_NET"])
+comboBoxSIPS.grid(column=1,row=12,columnspan=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+
+separatorNetVarS=ttk.Separator(labelFrameNetVar)
+separatorNetVarS.grid(column=0,row=13,columnspan=3,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
 buttonSvNetVar=ttk.Button(labelFrameNetVar,text="Save",command=svNetVar)
-buttonSvNetVar.grid(column=0,row=10,columnspan=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+buttonSvNetVar.grid(column=0,row=14,columnspan=3,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
 frameRl=ttk.Frame(noteBookMain)
 frameRl.grid(column=0,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 frameRl.grid_columnconfigure(0,weight=1)
 frameRl.grid_rowconfigure(0,weight=1)
-frameRl.grid_rowconfigure(1,weight=100)
+frameRl.grid_rowconfigure(1,weight=98)
 frameRl.grid_rowconfigure(2,weight=1)
 
 labelFrameRlFSelion=ttk.Labelframe(frameRl,text="Rule file selection")
@@ -1486,6 +1656,7 @@ labelFrameRlActn.grid_columnconfigure(1,weight=1)
 labelFrameRlActn.grid_columnconfigure(2,weight=1)
 labelFrameRlActn.grid_columnconfigure(3,weight=1)
 labelFrameRlActn.grid_columnconfigure(4,weight=1)
+labelFrameRlActn.grid_rowconfigure(0,weight=1)
 
 buttonARl=ttk.Button(labelFrameRlActn,text="Add rule",command=aRlTLvl)
 buttonARl.grid(column=0,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
@@ -1493,7 +1664,7 @@ buttonARl.grid(column=0,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tki
 buttonEdRl=ttk.Button(labelFrameRlActn,text="Edit rule",command=edRlTLvl)
 buttonEdRl.grid(column=1,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
-separatorRlActn=ttk.Separator(labelFrameRlActn,orient="vertical")
+separatorRlActn=ttk.Separator(labelFrameRlActn,orient=Tkinter.VERTICAL)
 separatorRlActn.grid(column=2,row=0,sticky=Tkinter.N+Tkinter.S)
 
 buttonEnaRl=ttk.Button(labelFrameRlActn,text="Enable rule",command=enaRl)
@@ -1506,7 +1677,7 @@ frameAlert=ttk.Frame(noteBookMain)
 frameAlert.grid(column=0,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 frameAlert.grid_columnconfigure(0,weight=1)
 frameAlert.grid_rowconfigure(0,weight=1)
-frameAlert.grid_rowconfigure(1,weight=1)
+frameAlert.grid_rowconfigure(1,weight=98)
 frameAlert.grid_rowconfigure(2,weight=1)
 
 labelFrameAlertLogVSetting=ttk.Labelframe(frameAlert,text="Alert log view settings")
@@ -1562,7 +1733,7 @@ scrollbarYAlert.grid(column=1,row=0,sticky=Tkinter.N+Tkinter.S)
 treeviewAlert.config(xscrollcommand=scrollbarXAlert.set,yscrollcommand=scrollbarYAlert.set)
 
 labelFrameFilter=ttk.Labelframe(frameAlert,text="Alert log view filter")
-labelFrameFilter.grid(column=0,row=6,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+labelFrameFilter.grid(column=0,row=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 labelFrameFilter.grid_columnconfigure(0,weight=1)
 labelFrameFilter.grid_columnconfigure(1,weight=1)
 labelFrameFilter.grid_columnconfigure(2,weight=1)
@@ -1674,13 +1845,104 @@ frameUd.grid(column=0,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkint
 frameUd.grid_columnconfigure(0,weight=1)
 frameUd.grid_rowconfigure(0,weight=1)
 frameUd.grid_rowconfigure(1,weight=1)
+frameUd.grid_rowconfigure(2,weight=1)
 
-labelFrameUdRlSet=ttk.Labelframe(frameUd,text="Update rule set")
-labelFrameUdRlSet.grid(column=0,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+labelFrameRlSetUDSetting=ttk.Labelframe(frameUd,text="Rule set Update setting")
+labelFrameRlSetUDSetting.grid(column=0,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+labelFrameRlSetUDSetting.grid_columnconfigure(0,weight=1)
+labelFrameRlSetUDSetting.grid_columnconfigure(1,weight=99)
+labelFrameRlSetUDSetting.grid_rowconfigure(0,weight=1)
+labelFrameRlSetUDSetting.grid_rowconfigure(1,weight=1)
+labelFrameRlSetUDSetting.grid_rowconfigure(2,weight=1)
+labelFrameRlSetUDSetting.grid_rowconfigure(3,weight=1)
+labelFrameRlSetUDSetting.grid_rowconfigure(4,weight=1)
+labelFrameRlSetUDSetting.grid_rowconfigure(5,weight=1)
+labelFrameRlSetUDSetting.grid_rowconfigure(6,weight=1)
+labelFrameRlSetUDSetting.grid_rowconfigure(7,weight=1)
+labelFrameRlSetUDSetting.grid_rowconfigure(8,weight=1)
+labelFrameRlSetUDSetting.grid_rowconfigure(9,weight=1)
+labelFrameRlSetUDSetting.grid_rowconfigure(10,weight=1)
+labelFrameRlSetUDSetting.grid_rowconfigure(11,weight=1)
+labelFrameRlSetUDSetting.grid_rowconfigure(12,weight=1)
+labelFrameRlSetUDSetting.grid_rowconfigure(13,weight=1)
+labelFrameRlSetUDSetting.grid_rowconfigure(14,weight=1)
+
+labelSnortVRT=ttk.Label(labelFrameRlSetUDSetting,text="Snort Vulnerability Research Team rules:")
+labelSnortVRT.grid(column=0,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S)
+
+checkButtonEnaSnortVRT=ttk.Checkbutton(labelFrameRlSetUDSetting,variable=snortVRTRl,text="Enable download of Snort VRT free registered user or paid subscriber rules")
+checkButtonEnaSnortVRT.grid(column=1,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+
+labelSnortOinkMaC=ttk.Label(labelFrameRlSetUDSetting,text="Snort oinkmaster code:")
+labelSnortOinkMaC.grid(column=0,row=1,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S)
+
+entrySnortOinkMaC=ttk.Entry(labelFrameRlSetUDSetting,textvariable=snortOinkMaC)
+entrySnortOinkMaC.grid(column=1,row=1,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+
+buttonPasSnortOinkMaC=ttk.Button(labelFrameRlSetUDSetting,text="Paste",command=pasSnortOinkMaC)
+buttonPasSnortOinkMaC.grid(column=2,row=1,columnspan=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+
+labelSnortOinkMaCPpt=ttk.Label(labelFrameRlSetUDSetting,text="Obtain a snort.org oinkmaster code and paste it here.")
+labelSnortOinkMaCPpt.grid(column=1,row=2,ipadx=5,padx=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+
+separatorSnortVRT=ttk.Separator(labelFrameRlSetUDSetting)
+separatorSnortVRT.grid(column=0,row=3,columnspan=2,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+
+labelSnortGPL=ttk.Label(labelFrameRlSetUDSetting,text="Snort GPLv2 Community rules:")
+labelSnortGPL.grid(column=0,row=4,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S)
+
+checkButtonSnortGPL=ttk.Checkbutton(labelFrameRlSetUDSetting,variable=snortCmtyRl,text="Enable download of Snort GPLv2 community rules")
+checkButtonSnortGPL.grid(column=1,row=4,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+
+labelSnortGPLPpt=ttk.Label(labelFrameRlSetUDSetting,text="The Snort Community ruleset is a GPLv2 VRT certified ruleset that is distributed free of charge without any VRT license restrictions.\nThis ruleset is updated daily and is a subset of the subscriber ruleset.")
+labelSnortGPLPpt.grid(column=1,row=5,ipadx=5,padx=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+
+separatorSnortGPL=ttk.Separator(labelFrameRlSetUDSetting)
+separatorSnortGPL.grid(column=0,row=6,columnspan=2,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+
+labelETOp=ttk.Label(labelFrameRlSetUDSetting,text="Emerging Threats Open rules:")
+labelETOp.grid(column=0,row=7,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S)
+
+checkButtonETOp=ttk.Checkbutton(labelFrameRlSetUDSetting,variable=eTOpRl,text="Enable download of Emerging Threats Open rules")
+checkButtonETOp.grid(column=1,row=7,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+
+labelETOpPpt=ttk.Label(labelFrameRlSetUDSetting,text="ETOpen is an open source set of Snort rules whose coverage is more limited than ETPro.")
+labelETOpPpt.grid(column=1,row=8,ipadx=9,padx=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+
+separatorETOp=ttk.Separator(labelFrameRlSetUDSetting)
+separatorETOp.grid(column=0,row=9,columnspan=2,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+
+labelETOp=ttk.Label(labelFrameRlSetUDSetting,text="Emerging Threats Pro rules:")
+labelETOp.grid(column=0,row=10,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S)
+
+checkButtonETPro=ttk.Checkbutton(labelFrameRlSetUDSetting,variable=eTProRl,text="Enable download of Emerging Threats Pro rules")
+checkButtonETPro.grid(column=1,row=10,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+
+labelETProOinkMaC=ttk.Label(labelFrameRlSetUDSetting,text="Emerging Threats oinkmaster code:")
+labelETProOinkMaC.grid(column=0,row=11,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S)
+
+entryETProOinkMaC=ttk.Entry(labelFrameRlSetUDSetting,textvariable=eTProOinkMaC)
+entryETProOinkMaC.grid(column=1,row=11,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+
+buttonPasETOinkMaC=ttk.Button(labelFrameRlSetUDSetting,text="Paste",command=pasETProOinkMaC)
+buttonPasETOinkMaC.grid(column=2,row=11,columnspan=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+
+labelETProPpt=ttk.Label(labelFrameRlSetUDSetting,text="ETPro for Snort offers daily updates and extensive coverage of current malware threats.")
+labelETProPpt.grid(column=1,row=12,ipadx=9,padx=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+
+separatorETPro=ttk.Separator(labelFrameRlSetUDSetting)
+separatorETPro.grid(column=0,row=13,columnspan=2,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+
+buttonSvRlUdSetting=ttk.Button(labelFrameRlSetUDSetting,text="Save setting",command=svPulledPorkcfg)
+buttonSvRlUdSetting.grid(column=0,row=14,columnspan=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+
+labelFrameUdRlSet=ttk.Labelframe(frameUd,text="Rule set update")
+labelFrameUdRlSet.grid(column=0,row=1,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 labelFrameUdRlSet.grid_columnconfigure(0,weight=1)
 labelFrameUdRlSet.grid_columnconfigure(1,weight=1)
 labelFrameUdRlSet.grid_rowconfigure(0,weight=1)
 labelFrameUdRlSet.grid_rowconfigure(1,weight=1)
+labelFrameUdRlSet.grid_rowconfigure(2,weight=1)
 
 labelUdRlSet=ttk.Label(labelFrameUdRlSet,text="Last update time:")
 labelUdRlSet.grid(column=0,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S)
@@ -1692,20 +1954,23 @@ buttonUdRl=ttk.Button(labelFrameUdRlSet,text="Update rules",command=udRl)
 buttonUdRl.grid(column=0,row=1,columnspan=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
 labelUdRlset=ttk.Label(labelFrameUdRlSet,text="Click [Update rules] to check for and automatically apply any new posted updates for selected rules packages.",anchor=Tkinter.CENTER)
-labelUdRlset.grid(column=0,row=2,columnspan=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+labelUdRlset.grid(column=0,row=2,columnspan=2,ipadx=5,padx=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
 labelFrameManageRlSetUdLog=ttk.Labelframe(frameUd,text="Manage rule update log")
-labelFrameManageRlSetUdLog.grid(column=0,row=1,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+labelFrameManageRlSetUdLog.grid(column=0,row=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 labelFrameManageRlSetUdLog.grid_columnconfigure(0,weight=1)
 labelFrameManageRlSetUdLog.grid_columnconfigure(1,weight=1)
-labelFrameManageRlSetUdLog.grid_columnconfigure(1,weight=1)
 labelFrameManageRlSetUdLog.grid_rowconfigure(0,weight=1)
+labelFrameManageRlSetUdLog.grid_rowconfigure(1,weight=1)
 
-buttonVLog=ttk.Button(labelFrameManageRlSetUdLog,text="View rule update log",command=vLogTLvl)
+buttonVLog=ttk.Button(labelFrameManageRlSetUdLog,text="View log",command=vLogTLvl)
 buttonVLog.grid(column=0,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
-buttonClrLog=ttk.Button(labelFrameManageRlSetUdLog,text="Clear rule update log",command=clrLog)
+buttonClrLog=ttk.Button(labelFrameManageRlSetUdLog,text="Clear log",command=clrLog)
 buttonClrLog.grid(column=1,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+
+labelClrLog=ttk.Label(labelFrameManageRlSetUdLog,text="Log files can be cleaned manually.",anchor=Tkinter.CENTER)
+labelClrLog.grid(column=0,row=1,columnspan=2,ipadx=5,padx=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
 frameAbt=ttk.Frame(noteBookMain)
 frameAbt.grid_columnconfigure(0,weight=1)
@@ -1717,22 +1982,42 @@ labelFrameSnortInfo=ttk.Labelframe(frameAbt,text="Snort Information")
 labelFrameSnortInfo.grid(column=0,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 labelFrameSnortInfo.grid_columnconfigure(0,weight=1)
 labelFrameSnortInfo.grid_rowconfigure(0,weight=1)
+labelFrameSnortInfo.grid_rowconfigure(1,weight=1)
 
 labelFrameSnortInfoOut=ttk.Label(labelFrameSnortInfo,anchor=Tkinter.CENTER)
-labelFrameSnortInfoOut.grid(column=0,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+labelFrameSnortInfoOut.grid(column=0,row=0,columnspan=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+
+buttonOSnortOWeb=ttk.Button(labelFrameSnortInfo,text="Official website",command=oSnortOWeb)
+buttonOSnortOWeb.grid(column=0,row=1,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
 labelFrameBarnyardInfo=ttk.Labelframe(frameAbt,text="Barnyard Information")
 labelFrameBarnyardInfo.grid(column=0,row=1,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 labelFrameBarnyardInfo.grid_columnconfigure(0,weight=1)
+labelFrameBarnyardInfo.grid_columnconfigure(1,weight=1)
+labelFrameBarnyardInfo.grid_columnconfigure(2,weight=1)
 labelFrameBarnyardInfo.grid_rowconfigure(0,weight=1)
+labelFrameBarnyardInfo.grid_rowconfigure(1,weight=1)
 
 labelFrameBarnyardInfoOut=ttk.Label(labelFrameBarnyardInfo,anchor=Tkinter.CENTER)
-labelFrameBarnyardInfoOut.grid(column=0,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+labelFrameBarnyardInfoOut.grid(column=0,row=0,columnspan=3,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
-labelFramePulledPorkInfo=ttk.Labelframe(frameAbt,text="PulledPork Information")
+buttonOBarnyardOWeb=ttk.Button(labelFrameBarnyardInfo,text="Official website",command=oBarnyardOWeb)
+buttonOBarnyardOWeb.grid(column=0,row=1,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+
+buttonOBarnyardGHWeb=ttk.Button(labelFrameBarnyardInfo,text="GitHub website",command=oBarnyardGHWeb)
+buttonOBarnyardGHWeb.grid(column=1,row=1,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+
+buttonOBarnyardOEMail=ttk.Button(labelFrameBarnyardInfo,text="Official e-mail",command=oBarnyardOEMail)
+buttonOBarnyardOEMail.grid(column=2,row=1,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+
+labelFramePulledPorkInfo=ttk.Labelframe(frameAbt,text="Pulled Pork Information")
 labelFramePulledPorkInfo.grid(column=0,row=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 labelFramePulledPorkInfo.grid_columnconfigure(0,weight=1)
 labelFramePulledPorkInfo.grid_rowconfigure(0,weight=1)
+labelFramePulledPorkInfo.grid_rowconfigure(1,weight=1)
+
+buttonOPulledPorkGHWeb=ttk.Button(labelFramePulledPorkInfo,text="GitHub website",command=oPulledPorkGHWeb)
+buttonOPulledPorkGHWeb.grid(column=0,row=1,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
 labelPulledPorkInfoOut=ttk.Label(labelFramePulledPorkInfo,anchor=Tkinter.CENTER)
 labelPulledPorkInfoOut.grid(column=0,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
@@ -1750,6 +2035,7 @@ acidtable()
 shwAlert()
 rRlF()
 loadCfg()
+loadPulledPorkcfg()
 rLastRlsetUdTm()
 shwSnortVer()
 shwBarnyardVer()
