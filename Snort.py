@@ -846,25 +846,37 @@ def lsAlertFilter():
     dateque = ""
     proque = ""
 
-    if lssid.get() !="":
-        sidque = str("AND sid LIKE '%"+lssid.get()+"%'")
-        
-    if lssignature.get() !="":
-        sigque = str("AND signature LIKE '%"+lssignature.get()+"%'")
+    try:
+        if lssid.get() != ""  :
+            value = int(lssid.get())
+            sidque = str("AND sid LIKE '"+lssid.get()+"'")
+            print sidque
+    except ValueError:
+        tkMessageBox.showerror("Error","Not Integer")
+    
+    try:
+        if lssignature.get() !="":
+            value = int(lssingature.get())
+            sigque = str("AND signature LIKE '"+lssignature.get()+"'")
+    except ValueError:
+        tkMessageBox.showerror("Error","Not Integer")
         
     if lssigname.get() !="":
         signameque = str("AND sig_name LIKE '%"+lssigname.get()+"%'")
         
     if lsipsrc.get() !="":
-        srcque = str("AND ip_src LIKE '%"+lsipsrc.get()+"%'")
-        
+        srcque = str("AND ip_src LIKE inet_aton('"+lsipsrc.get()+"')")
+        print srcque
     if lsipdst.get() !="":
-        dstque = str("AND ip_dst LIKE '%"+lsipdst.get()+"%'")
+        dstque = str("AND ip_dst LIKE inet_aton('"+lsipdst.get()+"')")
         
-    if lssdatey.get() !=0 and lssdatem.get() !=0 and lssdated.get() !=0 and lsedatey.get() !=0 and lsedatem.get() !=0 and lsedated.get() !=0 :
-        start = datetime.datetime(lssdatey.get(),lssdatem.get(),lssdated.get()).strftime('%Y-%m-%d %H:%M:%S')
-        end = datetime.datetime(lsedatey.get(),lsedatem.get(),lsedated.get()).strftime('%Y-%m-%d %H:%M:%S')
-        dateque = str ("AND timestamp between '"+start+"' AND '"+end+"'")
+    try:
+        if lssdatey.get() !=0 and lssdatem.get() !=0 and lssdated.get() !=0 and lsedatey.get() !=0 and lsedatem.get() !=0 and lsedated.get() !=0 :
+            start = datetime.datetime(lssdatey.get(),lssdatem.get(),lssdated.get()).strftime('%Y-%m-%d %H:%M:%S')
+            end = datetime.datetime(lsedatey.get(),lsedatem.get(),lsedated.get()).strftime('%Y-%m-%d %H:%M:%S')
+            dateque = str ("AND timestamp between '"+start+"' AND '"+end+"'")
+    except ValueError:
+        tkMessageBox.showerror("Error","Not Integer")
         
     if lsipproto.get() !="":
         proque = str("AND ip_proto LIKE (CASE '%"+lsipproto.get()+"%' WHEN '%ICMP%' THEN '1' WHEN '%TCP%' THEN '6'  WHEN '%UDP%' THEN '17' ELSE '%"+lsipproto.get()+"%' END)" )
@@ -872,6 +884,7 @@ def lsAlertFilter():
     sql =("SELECT sid,cid,signature,sig_name,timestamp,inet_ntoa(ip_src), inet_ntoa(ip_dst),(CASE ip_proto WHEN '1' THEN 'ICMP' WHEN '6' THEN 'TCP' WHEN '17' THEN 'UDP' ELSE acid1_event.ip_proto END) as ip_proto FROM acid1_event WHERE cid >=1 %s %s %s %s %s %s %s ORDER BY cid DESC")%(sidque,sigque,signameque,srcque,dstque,dateque,proque)
     cursor.execute(sql)
     data=cursor.fetchall()
+    print sql
     for row in data:
         treeviewAlert.insert("","end",values = row)
 
@@ -1277,11 +1290,17 @@ lssigname=Tkinter.StringVar()
 lsipsrc=Tkinter.StringVar()
 lsipdst=Tkinter.StringVar()
 lssdatey=Tkinter.IntVar()
+lssdatey.set(2019)
 lssdatem=Tkinter.IntVar()
+lssdatem.set(1)
 lssdated=Tkinter.IntVar()
+lssdated.set(1)
 lsedatey=Tkinter.IntVar()
+lsedatey.set(2019)
 lsedatem=Tkinter.IntVar()
+lsedatem.set(1)
 lsedated=Tkinter.IntVar()
+lsedated.set(1)
 lsipproto=Tkinter.StringVar()
 
 snortVRTRl=Tkinter.IntVar()
@@ -1831,25 +1850,25 @@ entrylsip_proto.grid(column=5,row=1,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter
 labellssdate=ttk.Label(labelFrameFilter,text="Date From:")
 labellssdate.grid(column=0,row=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S)
 
-entrylssdatey=ttk.Entry(labelFrameFilter,textvariable=lssdatey)
+entrylssdatey=Tkinter.Spinbox(labelFrameFilter,from_=1970,to=3000,textvariable=lssdatey)
 entrylssdatey.grid(column=1,row=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
-entrylssdatem=ttk.Entry(labelFrameFilter,textvariable=lssdatem)
+entrylssdatem=Tkinter.Spinbox(labelFrameFilter,from_=1,to=12,textvariable=lssdatem)
 entrylssdatem.grid(column=2,row=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
-entrylssdated=ttk.Entry(labelFrameFilter,textvariable=lssdated)
+entrylssdated=Tkinter.Spinbox(labelFrameFilter,from_=1,to=31,textvariable=lssdated)
 entrylssdated.grid(column=3,row=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
 labellsedate=ttk.Label(labelFrameFilter,text="Date To:")
 labellsedate.grid(column=0,row=3,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S)
 
-entrylsedatey=ttk.Entry(labelFrameFilter,textvariable=lsedatey)
+entrylsedatey=Tkinter.Spinbox(labelFrameFilter,from_=1970,to=3000,textvariable=lsedatey)
 entrylsedatey.grid(column=1,row=3,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
-entrylsedatem=ttk.Entry(labelFrameFilter,textvariable=lsedatem)
+entrylsedatem=Tkinter.Spinbox(labelFrameFilter,from_=1,to=12,textvariable=lsedatem)
 entrylsedatem.grid(column=2,row=3,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
-entrylsedated=ttk.Entry(labelFrameFilter,textvariable=lsedated)
+entrylsedated=Tkinter.Spinbox(labelFrameFilter,from_=1,to=31,textvariable=lsedated)
 entrylsedated.grid(column=3,row=3,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
 buttonlsAlertFilter=ttk.Button(labelFrameFilter,text="Filter",command=lsAlertFilter)
