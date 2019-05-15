@@ -1262,7 +1262,10 @@ def shwSnortVer():
     labelFrameSnortInfoOut.config(text=stdout)
 
 def oSnortOWeb():
-    webbrowser.open("https://www.snort.org/")
+    #webbrowser.open("https://www.snort.org/")
+    root.clipboard_clear()
+    root.clipboard_append("https://www.snort.org/")
+    tkMessageBox.showinfo("Information","The URL has been copied to the clipboard.")
 
 def shwBarnyardVer():
     barnyardVerOut=subprocess.Popen("barnyard2 -V",shell=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
@@ -1270,13 +1273,22 @@ def shwBarnyardVer():
     labelFrameBarnyardInfoOut.config(text=stdout)
 
 def oBarnyardOWeb():
-    webbrowser.open("https://www.securixlive.com/")
-
+    #webbrowser.open("https://www.securixlive.com/")
+    root.clipboard_clear()
+    root.clipboard_append("https://www.securixlive.com/")
+    tkMessageBox.showinfo("Information","The URL has been copied to the clipboard.")
+    
 def oBarnyardGHWeb():
-    webbrowser.open("https://github.com/firnsy/barnyard2/")
+    #webbrowser.open("https://github.com/firnsy/barnyard2/")
+    root.clipboard_clear()
+    root.clipboard_append("https://github.com/firnsy/barnyard2/")
+    tkMessageBox.showinfo("Information","The URL has been copied to the clipboard.")
 
 def oBarnyardOEMail():
-    webbrowser.open("mailto:firnsy@securixlive.com")
+    #webbrowser.open("mailto:firnsy@securixlive.com")
+    root.clipboard_clear()
+    root.clipboard_append("firnsy@securixlive.com")
+    tkMessageBox.showinfo("Information","The email address has been copied to the clipboard.")
 
 def shwPulledPorkVer():
     verO=subprocess.Popen("pulledpork.pl -V",shell=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
@@ -1284,7 +1296,10 @@ def shwPulledPorkVer():
     labelPulledPorkInfoOut.config(text=stdout)
 
 def oPulledPorkGHWeb():
-    webbrowser.open("https://github.com/shirkdog/pulledpork/")
+    #webbrowser.open("https://github.com/shirkdog/pulledpork/")
+    root.clipboard_clear()
+    root.clipboard_append("https://github.com/shirkdog/pulledpork/")
+    tkMessageBox.showinfo("Information","The URL has been copied to the clipboard.")
 
 root=Tkinter.Tk()
 root.title("Snort Intrusion Detection System Graphical User Interface")
