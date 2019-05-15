@@ -240,6 +240,9 @@ def loadSvcCfg():
         srchExecGrp=re.search('-g\s*([^\s*]*)\s*',execStart)
         if srchExecGrp:
             execGrp.set(srchExecGrp.group(1))
+        srchOptQtOp=re.search('-q',execStart)
+        if srchOptQtOp:
+            optQtOp.set(1)
     except:
         tkMessageBox.showerror("Error","The option or section was not found in the configuration file.\nMake sure the profile is created and configured correctly.")
     
@@ -846,25 +849,37 @@ def lsAlertFilter():
     dateque = ""
     proque = ""
 
-    if lssid.get() !="":
-        sidque = str("AND sid LIKE '%"+lssid.get()+"%'")
-        
-    if lssignature.get() !="":
-        sigque = str("AND signature LIKE '%"+lssignature.get()+"%'")
+    try:
+        if lssid.get() != ""  :
+            value = int(lssid.get())
+            sidque = str("AND sid LIKE '"+lssid.get()+"'")
+            print sidque
+    except ValueError:
+        tkMessageBox.showerror("Error","Not Integer")
+    
+    try:
+        if lssignature.get() !="":
+            value = int(lssingature.get())
+            sigque = str("AND signature LIKE '"+lssignature.get()+"'")
+    except ValueError:
+        tkMessageBox.showerror("Error","Not Integer")
         
     if lssigname.get() !="":
         signameque = str("AND sig_name LIKE '%"+lssigname.get()+"%'")
         
     if lsipsrc.get() !="":
-        srcque = str("AND ip_src LIKE '%"+lsipsrc.get()+"%'")
-        
+        srcque = str("AND ip_src LIKE inet_aton('"+lsipsrc.get()+"')")
+        print srcque
     if lsipdst.get() !="":
-        dstque = str("AND ip_dst LIKE '%"+lsipdst.get()+"%'")
+        dstque = str("AND ip_dst LIKE inet_aton('"+lsipdst.get()+"')")
         
-    if lssdatey.get() !=0 and lssdatem.get() !=0 and lssdated.get() !=0 and lsedatey.get() !=0 and lsedatem.get() !=0 and lsedated.get() !=0 :
-        start = datetime.datetime(lssdatey.get(),lssdatem.get(),lssdated.get()).strftime('%Y-%m-%d %H:%M:%S')
-        end = datetime.datetime(lsedatey.get(),lsedatem.get(),lsedated.get()).strftime('%Y-%m-%d %H:%M:%S')
-        dateque = str ("AND timestamp between '"+start+"' AND '"+end+"'")
+    try:
+        if lssdatey.get() !=0 and lssdatem.get() !=0 and lssdated.get() !=0 and lsedatey.get() !=0 and lsedatem.get() !=0 and lsedated.get() !=0 :
+            start = datetime.datetime(lssdatey.get(),lssdatem.get(),lssdated.get()).strftime('%Y-%m-%d %H:%M:%S')
+            end = datetime.datetime(lsedatey.get(),lsedatem.get(),lsedated.get()).strftime('%Y-%m-%d %H:%M:%S')
+            dateque = str ("AND timestamp between '"+start+"' AND '"+end+"'")
+    except ValueError:
+        tkMessageBox.showerror("Error","Not Integer")
         
     if lsipproto.get() !="":
         proque = str("AND ip_proto LIKE (CASE '%"+lsipproto.get()+"%' WHEN '%ICMP%' THEN '1' WHEN '%TCP%' THEN '6'  WHEN '%UDP%' THEN '17' ELSE '%"+lsipproto.get()+"%' END)" )
@@ -872,6 +887,7 @@ def lsAlertFilter():
     sql =("SELECT sid,cid,signature,sig_name,timestamp,inet_ntoa(ip_src), inet_ntoa(ip_dst),(CASE ip_proto WHEN '1' THEN 'ICMP' WHEN '6' THEN 'TCP' WHEN '17' THEN 'UDP' ELSE acid1_event.ip_proto END) as ip_proto FROM acid1_event WHERE cid >=1 %s %s %s %s %s %s %s ORDER BY cid DESC")%(sidque,sigque,signameque,srcque,dstque,dateque,proque)
     cursor.execute(sql)
     data=cursor.fetchall()
+    print sql
     for row in data:
         treeviewAlert.insert("","end",values = row)
 
@@ -1131,7 +1147,7 @@ def udRlTLvl():
     separatorUdRl=ttk.Separator(labelFrameUdRlSetTLvl)
     separatorUdRl.grid(column=0,row=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
     
-    labelPulledPorkO=ttk.Label(labelFrameUdRlSetTLvl,text=stdout)
+    labelPulledPorkO=ttk.Label(labelFrameUdRlSetTLvl,text=stdout,font=("Ubuntu Mono",))
     labelPulledPorkO.grid(column=0,row=3,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
     labelUdStat.config(text="The rule update has been done.")
@@ -1277,11 +1293,17 @@ lssigname=Tkinter.StringVar()
 lsipsrc=Tkinter.StringVar()
 lsipdst=Tkinter.StringVar()
 lssdatey=Tkinter.IntVar()
+lssdatey.set(2019)
 lssdatem=Tkinter.IntVar()
+lssdatem.set(1)
 lssdated=Tkinter.IntVar()
+lssdated.set(1)
 lsedatey=Tkinter.IntVar()
+lsedatey.set(2019)
 lsedatem=Tkinter.IntVar()
+lsedatem.set(1)
 lsedated=Tkinter.IntVar()
+lsedated.set(1)
 lsipproto=Tkinter.StringVar()
 
 snortVRTRl=Tkinter.IntVar()
@@ -1356,7 +1378,7 @@ buttonSecStSnort.grid(column=1,row=4,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinte
 separatorSecSnortStat=ttk.Separator(labelFrameSnortStat)
 separatorSecSnortStat.grid(column=0,row=5,columnspan=2,sticky=Tkinter.E+Tkinter.W)
 
-buttonSnortDet=ttk.Button(labelFrameSnortStat,text="Service Detail",command=snortSvcStatDetTLvl)
+buttonSnortDet=ttk.Button(labelFrameSnortStat,text="Show detail",command=snortSvcStatDetTLvl)
 buttonSnortDet.grid(column=0,row=6,columnspan=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E+Tkinter.W)
 
 labelFrameBarnyardStat=ttk.Labelframe(frameHome,text="Barnyard service status")
@@ -1401,7 +1423,7 @@ buttonStBarnyard.grid(column=1,row=4,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinte
 separatorSecBarnyardStat=ttk.Separator(labelFrameBarnyardStat)
 separatorSecBarnyardStat.grid(column=0,row=5,columnspan=2,sticky=Tkinter.E+Tkinter.W)
 
-buttonSnortDet=ttk.Button(labelFrameBarnyardStat,text="Service Detail",command=barnyardSvcStatDetTLvl)
+buttonSnortDet=ttk.Button(labelFrameBarnyardStat,text="Show detail",command=barnyardSvcStatDetTLvl)
 buttonSnortDet.grid(column=0,row=6,columnspan=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E+Tkinter.W)
 
 labelFrameSetting=ttk.Labelframe(frameHome,text="Snort service configuration")
@@ -1467,7 +1489,7 @@ checkButtonQtOp.grid(column=1,row=6,columnspan=2,ipadx=5,ipady=5,padx=5,pady=5,s
 separatorSetting=ttk.Separator(labelFrameSetting)
 separatorSetting.grid(column=0,row=7,columnspan=3,sticky=Tkinter.E+Tkinter.W)
 
-buttonSv=ttk.Button(labelFrameSetting,text="Save service configuration",command=svSvcCfg)
+buttonSv=ttk.Button(labelFrameSetting,text="Save configuration",command=svSvcCfg)
 buttonSv.grid(column=0,row=8,columnspan=3,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E+Tkinter.W)
 
 frameCfg=ttk.Frame(noteBookMain)
@@ -1494,10 +1516,10 @@ comboboxCfgF.grid(column=1,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+
 buttonAskCfgF=ttk.Button(labelFrameCfgFSelion,text="Browse",command=askCfgFLoc)
 buttonAskCfgF.grid(column=2,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
-buttonReloadCfgF=ttk.Button(labelFrameCfgFSelion,text="Reload file",command=loadCfg)
+buttonReloadCfgF=ttk.Button(labelFrameCfgFSelion,text="Load configure",command=loadCfg)
 buttonReloadCfgF.grid(column=0,row=1,columnspan=3,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
-labelFrameNetVar=ttk.Labelframe(frameCfg,text="Network variable")
+labelFrameNetVar=ttk.Labelframe(frameCfg,text="Network and server IP variable definitions")
 labelFrameNetVar.grid(column=0,row=1,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 labelFrameNetVar.grid_columnconfigure(0,weight=1)
 labelFrameNetVar.grid_columnconfigure(1,weight=98)
@@ -1517,87 +1539,94 @@ labelFrameNetVar.grid_rowconfigure(11,weight=1)
 labelFrameNetVar.grid_rowconfigure(12,weight=1)
 labelFrameNetVar.grid_rowconfigure(13,weight=1)
 labelFrameNetVar.grid_rowconfigure(14,weight=1)
+labelFrameNetVar.grid_rowconfigure(15,weight=1)
 
 labelIPPptH=ttk.Label(labelFrameNetVar,text="IP variable example:")
 labelIPPptH.grid(column=0,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S)
 
-labelIPPptE=ttk.Label(labelFrameNetVar,text="[1.1.1.1,2.2.2.0/24,![2.2.2.2,2.2.2.3]]")
+labelIPPptE=ttk.Label(labelFrameNetVar,text="192.168.1.0/24")
 labelIPPptE.grid(column=1,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
+labelIPPptH=ttk.Label(labelFrameNetVar,text="IP list example:")
+labelIPPptH.grid(column=0,row=1,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S)
+
+labelIPPptE=ttk.Label(labelFrameNetVar,text="[192.168.1.1,192.168.2.0/24,![192.168.2.1,192.168.2.2]]")
+labelIPPptE.grid(column=1,row=1,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+
 buttonVLog=ttk.Button(labelFrameNetVar,text="Help",command=netVarHelpTLvl)
-buttonVLog.grid(column=2,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+buttonVLog.grid(column=2,row=0,rowspan=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
 separatorNetVarPpt=ttk.Separator(labelFrameNetVar)
-separatorNetVarPpt.grid(column=0,row=1,columnspan=3,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+separatorNetVarPpt.grid(column=0,row=2,columnspan=3,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
-labelHomeNet=ttk.Label(labelFrameNetVar,text="Home network:")
-labelHomeNet.grid(column=0,row=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
+labelHomeNet=ttk.Label(labelFrameNetVar,text="Home network address(es):")
+labelHomeNet.grid(column=0,row=3,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
 
-comboBoxHomeNet=ttk.Combobox(labelFrameNetVar,textvariable=homeNetAdd,values=["any","10.0.0.0/24","192.168.1.0/24"])
-comboBoxHomeNet.grid(column=1,row=2,columnspan=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+comboBoxHomeNet=ttk.Combobox(labelFrameNetVar,textvariable=homeNetAdd,values=["any","10.0.0.0/8","172.16.0.0/12","192.168.0.0/16","10.0.0.0/24","192.168.1.0/24"])
+comboBoxHomeNet.grid(column=1,row=3,columnspan=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
-labelExtNet=ttk.Label(labelFrameNetVar,text="External network:")
-labelExtNet.grid(column=0,row=3,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
+labelExtNet=ttk.Label(labelFrameNetVar,text="External network address(es):")
+labelExtNet.grid(column=0,row=4,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
 
 comboBoxExtNet=ttk.Combobox(labelFrameNetVar,textvariable=extNetAdd,values=["any","!$HOME_NET"])
-comboBoxExtNet.grid(column=1,row=3,columnspan=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+comboBoxExtNet.grid(column=1,row=4,columnspan=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
 separatorNetVarNet=ttk.Separator(labelFrameNetVar)
-separatorNetVarNet.grid(column=0,row=4,columnspan=3,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+separatorNetVarNet.grid(column=0,row=5,columnspan=3,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
-labelDNSS=ttk.Label(labelFrameNetVar,text="DNS Servers:")
-labelDNSS.grid(column=0,row=5,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
+labelDNSS=ttk.Label(labelFrameNetVar,text="DNS server address(es):")
+labelDNSS.grid(column=0,row=6,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
 
 comboBoxDNSS=ttk.Combobox(labelFrameNetVar,textvariable=dnsSIpAdd,values=["$HOME_NET"])
-comboBoxDNSS.grid(column=1,row=5,columnspan=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+comboBoxDNSS.grid(column=1,row=6,columnspan=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
-labelSMTPS=ttk.Label(labelFrameNetVar,text="SMTP Servers:")
-labelSMTPS.grid(column=0,row=6,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
+labelSMTPS=ttk.Label(labelFrameNetVar,text="SMTP server address(es):")
+labelSMTPS.grid(column=0,row=7,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
 
 comboBoxSMTPS=ttk.Combobox(labelFrameNetVar,textvariable=smtpSAdd,values=["$HOME_NET"])
-comboBoxSMTPS.grid(column=1,row=6,columnspan=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+comboBoxSMTPS.grid(column=1,row=7,columnspan=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
-labelHTTPS=ttk.Label(labelFrameNetVar,text="HTTP Servers:")
-labelHTTPS.grid(column=0,row=7,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
+labelHTTPS=ttk.Label(labelFrameNetVar,text="HTTP server address(es):")
+labelHTTPS.grid(column=0,row=8,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
 
 comboBoxHTTPS=ttk.Combobox(labelFrameNetVar,textvariable=httpSAdd,values=["$HOME_NET"])
-comboBoxHTTPS.grid(column=1,row=7,columnspan=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+comboBoxHTTPS.grid(column=1,row=8,columnspan=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
-labelSQLS=ttk.Label(labelFrameNetVar,text="SQL Servers:")
-labelSQLS.grid(column=0,row=8,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
+labelSQLS=ttk.Label(labelFrameNetVar,text="SQL server address(es):")
+labelSQLS.grid(column=0,row=9,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
 
 comboBoxSQLS=ttk.Combobox(labelFrameNetVar,textvariable=sqlSAdd,values=["$HOME_NET"])
-comboBoxSQLS.grid(column=1,row=8,columnspan=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+comboBoxSQLS.grid(column=1,row=9,columnspan=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
-labelTelnetS=ttk.Label(labelFrameNetVar,text="Telnet Servers:")
-labelTelnetS.grid(column=0,row=9,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
+labelTelnetS=ttk.Label(labelFrameNetVar,text="Telnet server address(es):")
+labelTelnetS.grid(column=0,row=10,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
 
 comboBoxTelnetS=ttk.Combobox(labelFrameNetVar,textvariable=telnetSAdd,values=["$HOME_NET"])
-comboBoxTelnetS.grid(column=1,row=9,columnspan=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+comboBoxTelnetS.grid(column=1,row=10,columnspan=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
-labelSSHS=ttk.Label(labelFrameNetVar,text="SSH Servers:")
-labelSSHS.grid(column=0,row=10,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
+labelSSHS=ttk.Label(labelFrameNetVar,text="SSH server address(es):")
+labelSSHS.grid(column=0,row=11,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
 
 comboBoxSSHS=ttk.Combobox(labelFrameNetVar,textvariable=sshSAdd,values=["$HOME_NET"])
-comboBoxSSHS.grid(column=1,row=10,columnspan=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+comboBoxSSHS.grid(column=1,row=11,columnspan=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
-labelFTPS=ttk.Label(labelFrameNetVar,text="FTP Servers:")
-labelFTPS.grid(column=0,row=11,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
+labelFTPS=ttk.Label(labelFrameNetVar,text="FTP server address(es):")
+labelFTPS.grid(column=0,row=12,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
 
 comboBoxFTPS=ttk.Combobox(labelFrameNetVar,textvariable=ftpSAdd,values=["$HOME_NET"])
-comboBoxFTPS.grid(column=1,row=11,columnspan=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+comboBoxFTPS.grid(column=1,row=12,columnspan=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
-labelSIPS=ttk.Label(labelFrameNetVar,text="SIP Servers:")
-labelSIPS.grid(column=0,row=12,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
+labelSIPS=ttk.Label(labelFrameNetVar,text="SIP server address(es):")
+labelSIPS.grid(column=0,row=13,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
 
 comboBoxSIPS=ttk.Combobox(labelFrameNetVar,textvariable=sipSAdd,values=["$HOME_NET"])
-comboBoxSIPS.grid(column=1,row=12,columnspan=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+comboBoxSIPS.grid(column=1,row=13,columnspan=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
 separatorNetVarS=ttk.Separator(labelFrameNetVar)
-separatorNetVarS.grid(column=0,row=13,columnspan=3,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+separatorNetVarS.grid(column=0,row=14,columnspan=3,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
-buttonSvNetVar=ttk.Button(labelFrameNetVar,text="Save",command=svNetVar)
-buttonSvNetVar.grid(column=0,row=14,columnspan=3,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+buttonSvNetVar=ttk.Button(labelFrameNetVar,text="Save configuration",command=svNetVar)
+buttonSvNetVar.grid(column=0,row=15,columnspan=3,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
 frameRl=ttk.Frame(noteBookMain)
 frameRl.grid(column=0,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
@@ -1624,7 +1653,7 @@ comboboxRlF.grid(column=1,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+T
 buttonAskRlF=ttk.Button(labelFrameRlFSelion,text="Browse",command=askRlFLoc)
 buttonAskRlF.grid(column=2,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
-buttonReloadRlF=ttk.Button(labelFrameRlFSelion,text="Reload file",command=reloadRl)
+buttonReloadRlF=ttk.Button(labelFrameRlFSelion,text="Load rules",command=reloadRl)
 buttonReloadRlF.grid(column=0,row=1,columnspan=3,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
 labelFrameSeledFsRl=ttk.Labelframe(frameRl,text="Selected file's rule")
@@ -1720,7 +1749,7 @@ treeviewAlert.heading("sid",text="SID")
 treeviewAlert.column("sid",width=30)
 treeviewAlert.heading("cid",text="CID")
 treeviewAlert.column("cid",width=50)
-treeviewAlert.heading("signature",text="Sig")
+treeviewAlert.heading("signature",text="Signature")
 treeviewAlert.column("signature",width=30)
 treeviewAlert.heading("sig_name",text="Signature Name")
 treeviewAlert.column("sig_name",width=200)
@@ -1728,9 +1757,9 @@ treeviewAlert.heading("timestamp",text="Timestamp")
 treeviewAlert.column("timestamp",width=190)
 treeviewAlert.heading("ip_src",text="Source Address")
 treeviewAlert.column("ip_src",width=150)
-treeviewAlert.heading("ip_dst",text="Dest Address")
+treeviewAlert.heading("ip_dst",text="Destination Address")
 treeviewAlert.column("ip_dst",width=150)
-treeviewAlert.heading("ip_proto",text="Prot")
+treeviewAlert.heading("ip_proto",text="Protocol")
 treeviewAlert.column("ip_proto",width=40)
 treeviewAlert.grid(column=0,row=0,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
@@ -1752,16 +1781,16 @@ labelFrameAlertLogVSetting.grid_rowconfigure(0,weight=1)
 labelFrameAlertLogVSetting.grid_rowconfigure(1,weight=1)
 labelFrameAlertLogVSetting.grid_rowconfigure(2,weight=1)
 
-buttonlsAlertall=ttk.Button(labelFrameAlertLogVSetting,text="All protocol traffic alert",command=shwAlert)
+buttonlsAlertall=ttk.Button(labelFrameAlertLogVSetting,text="All protocol",command=shwAlert)
 buttonlsAlertall.grid(column=0,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
-buttonlsAlerttcp=ttk.Button(labelFrameAlertLogVSetting,text="TCP traffic alert",command=lsAlerttcp)
+buttonlsAlerttcp=ttk.Button(labelFrameAlertLogVSetting,text="TCP only",command=lsAlerttcp)
 buttonlsAlerttcp.grid(column=1,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
-buttonlsAlertudp=ttk.Button(labelFrameAlertLogVSetting,text="UDP traffic alert",command=lsAlertudp)
+buttonlsAlertudp=ttk.Button(labelFrameAlertLogVSetting,text="UDP only",command=lsAlertudp)
 buttonlsAlertudp.grid(column=2,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
-buttonlsAlerticmp=ttk.Button(labelFrameAlertLogVSetting,text="ICMP traffic alert",command=lsAlerticmp)
+buttonlsAlerticmp=ttk.Button(labelFrameAlertLogVSetting,text="ICMP only",command=lsAlerticmp)
 buttonlsAlerticmp.grid(column=3,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
 separatorAlert=ttk.Separator(labelFrameAlertLogVSetting)
@@ -1810,13 +1839,13 @@ labellssig_name.grid(column=4,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter
 entrylssig_name=ttk.Entry(labelFrameFilter,textvariable=lssigname)
 entrylssig_name.grid(column=5,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
-labellsip_src=ttk.Label(labelFrameFilter,text="Source Internet Protocol address:")
+labellsip_src=ttk.Label(labelFrameFilter,text="Source IP address:")
 labellsip_src.grid(column=0,row=1,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S)
 
 entrylsip_src=ttk.Entry(labelFrameFilter,textvariable=lsipsrc)
 entrylsip_src.grid(column=1,row=1,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
-labellsip_dst=ttk.Label(labelFrameFilter,text="Destination Internet Protocol address:")
+labellsip_dst=ttk.Label(labelFrameFilter,text="Destination IP address:")
 labellsip_dst.grid(column=2,row=1,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S)
 
 entrylsip_dst=ttk.Entry(labelFrameFilter,textvariable=lsipdst)
@@ -1825,31 +1854,31 @@ entrylsip_dst.grid(column=3,row=1,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N
 labellsip_proto=ttk.Label(labelFrameFilter,text="Protocol:")
 labellsip_proto.grid(column=4,row=1,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S)
 
-entrylsip_proto=ttk.Entry(labelFrameFilter,textvariable=lsipproto)
+entrylsip_proto=ttk.Combobox(labelFrameFilter,textvariable=lsipproto,values=["TCP","UDP","ICMP"])
 entrylsip_proto.grid(column=5,row=1,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
 labellssdate=ttk.Label(labelFrameFilter,text="Date From:")
 labellssdate.grid(column=0,row=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S)
 
-entrylssdatey=ttk.Entry(labelFrameFilter,textvariable=lssdatey)
+entrylssdatey=Tkinter.Spinbox(labelFrameFilter,from_=1970,to=3000,textvariable=lssdatey)
 entrylssdatey.grid(column=1,row=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
-entrylssdatem=ttk.Entry(labelFrameFilter,textvariable=lssdatem)
+entrylssdatem=Tkinter.Spinbox(labelFrameFilter,from_=1,to=12,textvariable=lssdatem)
 entrylssdatem.grid(column=2,row=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
-entrylssdated=ttk.Entry(labelFrameFilter,textvariable=lssdated)
+entrylssdated=Tkinter.Spinbox(labelFrameFilter,from_=1,to=31,textvariable=lssdated)
 entrylssdated.grid(column=3,row=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
 labellsedate=ttk.Label(labelFrameFilter,text="Date To:")
 labellsedate.grid(column=0,row=3,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S)
 
-entrylsedatey=ttk.Entry(labelFrameFilter,textvariable=lsedatey)
+entrylsedatey=Tkinter.Spinbox(labelFrameFilter,from_=1970,to=3000,textvariable=lsedatey)
 entrylsedatey.grid(column=1,row=3,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
-entrylsedatem=ttk.Entry(labelFrameFilter,textvariable=lsedatem)
+entrylsedatem=Tkinter.Spinbox(labelFrameFilter,from_=1,to=12,textvariable=lsedatem)
 entrylsedatem.grid(column=2,row=3,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
-entrylsedated=ttk.Entry(labelFrameFilter,textvariable=lsedated)
+entrylsedated=Tkinter.Spinbox(labelFrameFilter,from_=1,to=31,textvariable=lsedated)
 entrylsedated.grid(column=3,row=3,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
 buttonlsAlertFilter=ttk.Button(labelFrameFilter,text="Filter",command=lsAlertFilter)
@@ -1877,7 +1906,8 @@ frameUd.grid_rowconfigure(2,weight=1)
 labelFrameRlSetUDSetting=ttk.Labelframe(frameUd,text="Rule set Update setting")
 labelFrameRlSetUDSetting.grid(column=0,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 labelFrameRlSetUDSetting.grid_columnconfigure(0,weight=1)
-labelFrameRlSetUDSetting.grid_columnconfigure(1,weight=99)
+labelFrameRlSetUDSetting.grid_columnconfigure(1,weight=98)
+labelFrameRlSetUDSetting.grid_columnconfigure(2,weight=1)
 labelFrameRlSetUDSetting.grid_rowconfigure(0,weight=1)
 labelFrameRlSetUDSetting.grid_rowconfigure(1,weight=1)
 labelFrameRlSetUDSetting.grid_rowconfigure(2,weight=1)
@@ -1907,13 +1937,13 @@ entrySnortOinkMaC=ttk.Entry(labelFrameRlSetUDSetting,textvariable=snortOinkMaC)
 entrySnortOinkMaC.grid(column=1,row=1,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
 buttonPasSnortOinkMaC=ttk.Button(labelFrameRlSetUDSetting,text="Paste",command=pasSnortOinkMaC)
-buttonPasSnortOinkMaC.grid(column=2,row=1,columnspan=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+buttonPasSnortOinkMaC.grid(column=2,row=1,columnspan=3,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
 labelSnortOinkMaCPpt=ttk.Label(labelFrameRlSetUDSetting,text="Obtain a snort.org oinkmaster code and paste it here.")
 labelSnortOinkMaCPpt.grid(column=1,row=2,ipadx=5,padx=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
 separatorSnortVRT=ttk.Separator(labelFrameRlSetUDSetting)
-separatorSnortVRT.grid(column=0,row=3,columnspan=2,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+separatorSnortVRT.grid(column=0,row=3,columnspan=3,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
 labelSnortGPL=ttk.Label(labelFrameRlSetUDSetting,text="Snort GPLv2 Community rules:")
 labelSnortGPL.grid(column=0,row=4,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S)
@@ -1925,7 +1955,7 @@ labelSnortGPLPpt=ttk.Label(labelFrameRlSetUDSetting,text="The Snort Community ru
 labelSnortGPLPpt.grid(column=1,row=5,ipadx=5,padx=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
 separatorSnortGPL=ttk.Separator(labelFrameRlSetUDSetting)
-separatorSnortGPL.grid(column=0,row=6,columnspan=2,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+separatorSnortGPL.grid(column=0,row=6,columnspan=3,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
 labelETOp=ttk.Label(labelFrameRlSetUDSetting,text="Emerging Threats Open rules:")
 labelETOp.grid(column=0,row=7,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S)
@@ -1937,7 +1967,7 @@ labelETOpPpt=ttk.Label(labelFrameRlSetUDSetting,text="ETOpen is an open source s
 labelETOpPpt.grid(column=1,row=8,ipadx=9,padx=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
 separatorETOp=ttk.Separator(labelFrameRlSetUDSetting)
-separatorETOp.grid(column=0,row=9,columnspan=2,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+separatorETOp.grid(column=0,row=9,columnspan=3,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
 labelETOp=ttk.Label(labelFrameRlSetUDSetting,text="Emerging Threats Pro rules:")
 labelETOp.grid(column=0,row=10,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S)
@@ -1958,10 +1988,10 @@ labelETProPpt=ttk.Label(labelFrameRlSetUDSetting,text="ETPro for Snort offers da
 labelETProPpt.grid(column=1,row=12,ipadx=9,padx=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
 separatorETPro=ttk.Separator(labelFrameRlSetUDSetting)
-separatorETPro.grid(column=0,row=13,columnspan=2,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+separatorETPro.grid(column=0,row=13,columnspan=3,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
 buttonSvRlUdSetting=ttk.Button(labelFrameRlSetUDSetting,text="Save setting",command=svPulledPorkcfg)
-buttonSvRlUdSetting.grid(column=0,row=14,columnspan=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+buttonSvRlUdSetting.grid(column=0,row=14,columnspan=3,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
 labelFrameUdRlSet=ttk.Labelframe(frameUd,text="Rule set update")
 labelFrameUdRlSet.grid(column=0,row=1,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
@@ -2011,7 +2041,7 @@ labelFrameSnortInfo.grid_columnconfigure(0,weight=1)
 labelFrameSnortInfo.grid_rowconfigure(0,weight=1)
 labelFrameSnortInfo.grid_rowconfigure(1,weight=1)
 
-labelFrameSnortInfoOut=ttk.Label(labelFrameSnortInfo,anchor=Tkinter.CENTER)
+labelFrameSnortInfoOut=ttk.Label(labelFrameSnortInfo,anchor=Tkinter.CENTER,font=("Ubuntu Mono",))
 labelFrameSnortInfoOut.grid(column=0,row=0,columnspan=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
 buttonOSnortOWeb=ttk.Button(labelFrameSnortInfo,text="Official website",command=oSnortOWeb)
@@ -2025,7 +2055,7 @@ labelFrameBarnyardInfo.grid_columnconfigure(2,weight=1)
 labelFrameBarnyardInfo.grid_rowconfigure(0,weight=1)
 labelFrameBarnyardInfo.grid_rowconfigure(1,weight=1)
 
-labelFrameBarnyardInfoOut=ttk.Label(labelFrameBarnyardInfo,anchor=Tkinter.CENTER)
+labelFrameBarnyardInfoOut=ttk.Label(labelFrameBarnyardInfo,anchor=Tkinter.CENTER,font=("Ubuntu Mono",))
 labelFrameBarnyardInfoOut.grid(column=0,row=0,columnspan=3,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
 buttonOBarnyardOWeb=ttk.Button(labelFrameBarnyardInfo,text="Official website",command=oBarnyardOWeb)
@@ -2043,11 +2073,11 @@ labelFramePulledPorkInfo.grid_columnconfigure(0,weight=1)
 labelFramePulledPorkInfo.grid_rowconfigure(0,weight=1)
 labelFramePulledPorkInfo.grid_rowconfigure(1,weight=1)
 
+labelPulledPorkInfoOut=ttk.Label(labelFramePulledPorkInfo,anchor=Tkinter.CENTER,font=("Ubuntu Mono",))
+labelPulledPorkInfoOut.grid(column=0,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+
 buttonOPulledPorkGHWeb=ttk.Button(labelFramePulledPorkInfo,text="GitHub website",command=oPulledPorkGHWeb)
 buttonOPulledPorkGHWeb.grid(column=0,row=1,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
-
-labelPulledPorkInfoOut=ttk.Label(labelFramePulledPorkInfo,anchor=Tkinter.CENTER)
-labelPulledPorkInfoOut.grid(column=0,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
 noteBookMain.add(frameHome,text="Home")
 noteBookMain.add(frameCfg,text="Configuration")
