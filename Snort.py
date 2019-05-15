@@ -1194,7 +1194,7 @@ def udRlTLvl():
     labelFrameUdRlSetTLvl.grid_rowconfigure(0,weight=1)
     labelFrameUdRlSetTLvl.grid_rowconfigure(1,weight=1)
     labelFrameUdRlSetTLvl.grid_rowconfigure(2,weight=1)
-    labelFrameUdRlSetTLvl.grid_rowconfigure(3,weight=1)
+    labelFrameUdRlSetTLvl.grid_rowconfigure(3,weight=97)
 
     labelUdStat=ttk.Label(labelFrameUdRlSetTLvl,text="Checking latest rule updates...")
     labelUdStat.grid(column=0,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
@@ -1373,17 +1373,17 @@ lssigname=Tkinter.StringVar()
 lsipsrc=Tkinter.StringVar()
 lsipdst=Tkinter.StringVar()
 lssdatey=Tkinter.IntVar()
-lssdatey.set(2019)
+lssdatey.set(0)
 lssdatem=Tkinter.IntVar()
-lssdatem.set(1)
+lssdatem.set(0)
 lssdated=Tkinter.IntVar()
-lssdated.set(1)
+lssdated.set(0)
 lsedatey=Tkinter.IntVar()
-lsedatey.set(2019)
+lsedatey.set(0)
 lsedatem=Tkinter.IntVar()
-lsedatem.set(12)
+lsedatem.set(0)
 lsedated=Tkinter.IntVar()
-lsedated.set(31)
+lsedated.set(0)
 lsipproto=Tkinter.StringVar()
 
 snortVRTRl=Tkinter.IntVar()
@@ -1403,7 +1403,7 @@ try:
     labelSnortImg=ttk.Label(root,image=snortImg,anchor=Tkinter.CENTER,background="black")
     labelSnortImg.grid(column=0,row=0,ipadx=10,ipady=10,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 except:
-    labelSnort=ttk.Label(root,text="Snort",font=("UKIJ Tughra",30),anchor=Tkinter.CENTER,foreground="orange",background="black")
+    labelSnort=ttk.Label(root,text="SNORT",font=("UKIJ Tughra",30,"italic"),anchor=Tkinter.CENTER,foreground="orange",background="black")
     labelSnort.grid(column=0,row=0,ipadx=10,ipady=10,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
 buttonReload=ttk.Button(root,text="Restart Snort",command=restatAllSvc,style="restartSnort.TButton")
@@ -1657,49 +1657,49 @@ separatorNetVarNet.grid(column=0,row=5,columnspan=3,sticky=Tkinter.N+Tkinter.E+T
 labelDNSS=ttk.Label(labelFrameNetVar,text="DNS server IP address:")
 labelDNSS.grid(column=0,row=6,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
 
-comboBoxDNSS=ttk.Combobox(labelFrameNetVar,textvariable=dnsSIpAdd,values=[""])
+comboBoxDNSS=ttk.Entry(labelFrameNetVar,textvariable=dnsSIpAdd)
 comboBoxDNSS.grid(column=1,row=6,columnspan=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
 labelSMTPS=ttk.Label(labelFrameNetVar,text="SMTP server IP address:")
 labelSMTPS.grid(column=0,row=7,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
 
-comboBoxSMTPS=ttk.Combobox(labelFrameNetVar,textvariable=smtpSAdd,values=[""])
+comboBoxSMTPS=ttk.Entry(labelFrameNetVar,textvariable=smtpSAdd)
 comboBoxSMTPS.grid(column=1,row=7,columnspan=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
 labelHTTPS=ttk.Label(labelFrameNetVar,text="HTTP server IP address:")
 labelHTTPS.grid(column=0,row=8,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
 
-comboBoxHTTPS=ttk.Combobox(labelFrameNetVar,textvariable=httpSAdd,values=[""])
+comboBoxHTTPS=ttk.Entry(labelFrameNetVar,textvariable=httpSAdd)
 comboBoxHTTPS.grid(column=1,row=8,columnspan=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
 labelSQLS=ttk.Label(labelFrameNetVar,text="SQL server IP address:")
 labelSQLS.grid(column=0,row=9,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
 
-comboBoxSQLS=ttk.Combobox(labelFrameNetVar,textvariable=sqlSAdd,values=[""])
+comboBoxSQLS=ttk.Entry(labelFrameNetVar,textvariable=sqlSAdd)
 comboBoxSQLS.grid(column=1,row=9,columnspan=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
 labelTelnetS=ttk.Label(labelFrameNetVar,text="Telnet server IP address:")
 labelTelnetS.grid(column=0,row=10,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
 
-comboBoxTelnetS=ttk.Combobox(labelFrameNetVar,textvariable=telnetSAdd,values=[""])
+comboBoxTelnetS=ttk.Entry(labelFrameNetVar,textvariable=telnetSAdd)
 comboBoxTelnetS.grid(column=1,row=10,columnspan=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
 labelSSHS=ttk.Label(labelFrameNetVar,text="SSH server IP address:")
 labelSSHS.grid(column=0,row=11,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
 
-comboBoxSSHS=ttk.Combobox(labelFrameNetVar,textvariable=sshSAdd,values=[""])
+comboBoxSSHS=ttk.Entry(labelFrameNetVar,textvariable=sshSAdd)
 comboBoxSSHS.grid(column=1,row=11,columnspan=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
 labelFTPS=ttk.Label(labelFrameNetVar,text="FTP server IP address:")
 labelFTPS.grid(column=0,row=12,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
 
-comboBoxFTPS=ttk.Combobox(labelFrameNetVar,textvariable=ftpSAdd,values=[""])
+comboBoxFTPS=ttk.Entry(labelFrameNetVar,textvariable=ftpSAdd)
 comboBoxFTPS.grid(column=1,row=12,columnspan=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
 labelSIPS=ttk.Label(labelFrameNetVar,text="SIP server IP address:")
 labelSIPS.grid(column=0,row=13,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
 
-comboBoxSIPS=ttk.Combobox(labelFrameNetVar,textvariable=sipSAdd,values=[""])
+comboBoxSIPS=ttk.Entry(labelFrameNetVar,textvariable=sipSAdd)
 comboBoxSIPS.grid(column=1,row=13,columnspan=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
 separatorNetVarS=ttk.Separator(labelFrameNetVar)
@@ -1939,25 +1939,25 @@ entrylsip_proto.grid(column=5,row=1,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter
 labellssdate=ttk.Label(labelFrameFilter,text="Date From:")
 labellssdate.grid(column=0,row=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S)
 
-entrylssdatey=Tkinter.Spinbox(labelFrameFilter,from_=1970,to=3000,textvariable=lssdatey)
+entrylssdatey=Tkinter.Spinbox(labelFrameFilter,from_=0,to=3000,textvariable=lssdatey)
 entrylssdatey.grid(column=1,row=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
-entrylssdatem=Tkinter.Spinbox(labelFrameFilter,from_=1,to=12,textvariable=lssdatem)
+entrylssdatem=Tkinter.Spinbox(labelFrameFilter,from_=0,to=12,textvariable=lssdatem)
 entrylssdatem.grid(column=2,row=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
-entrylssdated=Tkinter.Spinbox(labelFrameFilter,from_=1,to=31,textvariable=lssdated)
+entrylssdated=Tkinter.Spinbox(labelFrameFilter,from_=0,to=31,textvariable=lssdated)
 entrylssdated.grid(column=3,row=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
 labellsedate=ttk.Label(labelFrameFilter,text="Date To:")
 labellsedate.grid(column=0,row=3,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S)
 
-entrylsedatey=Tkinter.Spinbox(labelFrameFilter,from_=1970,to=3000,textvariable=lsedatey)
+entrylsedatey=Tkinter.Spinbox(labelFrameFilter,from_=0,to=3000,textvariable=lsedatey)
 entrylsedatey.grid(column=1,row=3,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
-entrylsedatem=Tkinter.Spinbox(labelFrameFilter,from_=1,to=12,textvariable=lsedatem)
+entrylsedatem=Tkinter.Spinbox(labelFrameFilter,from_=0,to=12,textvariable=lsedatem)
 entrylsedatem.grid(column=2,row=3,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
-entrylsedated=Tkinter.Spinbox(labelFrameFilter,from_=1,to=31,textvariable=lsedated)
+entrylsedated=Tkinter.Spinbox(labelFrameFilter,from_=0,to=31,textvariable=lsedated)
 entrylsedated.grid(column=3,row=3,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
 buttonlsAlertFilter=ttk.Button(labelFrameFilter,text="Filter",command=lsAlertFilter)
