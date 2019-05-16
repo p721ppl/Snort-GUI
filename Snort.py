@@ -3,8 +3,8 @@ import datetime
 import fileinput
 import grp
 import ipaddress
-import matplotlib.pyplot
-import matplotlib.cbook
+#import matplotlib.pyplot
+#import matplotlib.cbook
 import MySQLdb
 import netifaces
 import os
@@ -155,17 +155,27 @@ def reloadSysDMrgCfg():
         tkMessageBox.showerror("Error",stderr)
         
 def restatAllSvc():
-    reStrtSnortSvc=subprocess.Popen("sudo systemctl restart snort.service",shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-    SnortSvcStdOut,SnortSvcStdErr=reStrtSnortSvc.communicate()
-    if reStrtSnortSvc.returncode != 0:
-        tkMessageBox.showerror("Error",SnortSvcStdErr)
-        
     reloadSysDMrgCfg=subprocess.Popen("sudo systemctl daemon-reload",shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-    SysDMrgStdOut,SysDMrgStdErr=reloadSysDMrgCfg.communicate()
+    sysDMrgStdOut,sysDMrgStdErr=reloadSysDMrgCfg.communicate()
     if reloadSysDMrgCfg.returncode != 0:
-        tkMessageBox.showerror("Error",SysDMrgStdErr)
+        tkMessageBox.showerror("Error",sysDMrgStdErr)
 
-    uDSigMsgMap=subprocess.Popen("sudo pulledpork.pl -c /etc/snort/pulledpork.conf -l -n",shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+    reStrtSnortSvcO=subprocess.Popen("sudo systemctl restart snort.service",shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+    stdout,stderr=reStrtSnortSvcO.communicate()
+    if reStrtSnortSvcO.returncode != 0:
+        tkMessageBox.showerror("Error",stderr)
+
+    #stSnortSvc=subprocess.Popen("sudo systemctl stop snort.service",shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+    #stSnortSvcStdOut,stSnortSvcStdErr=stSnortSvc.communicate()
+    #if stSnortSvc.returncode != 0:
+        #tkMessageBox.showerror("Error",stSnortSvcStdErr)
+    
+    #strtSnortSvc=subprocess.Popen("sudo systemctl start snort.service",shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+    #strtSnortSvcStdOut,strtSnortSvcStdErr=strtSnortSvc.communicate()
+    #if strtSnortSvc.returncode != 0:
+        #tkMessageBox.showerror("Error",strtSnortSvcStdErr)
+
+    uDSigMsgMap=subprocess.Popen("sudo pulledpork.pl -c /etc/snort/pulledpork.conf -l -n -P",shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
     PulledPorkStdOut,PulledPorkStdErr=uDSigMsgMap.communicate()
     if uDSigMsgMap.returncode != 0:
         tkMessageBox.showerror("Error",PulledPorkStdErr)
@@ -268,7 +278,7 @@ def grpLs():
 
 def netItfLs():
     netItfLs=netifaces.interfaces()
-    netItfLs.remove
+    netItfLs.remove("lo")
     return netItfLs
 
 def loadSvcCfg():
@@ -492,10 +502,10 @@ def aRlTLvl():
     ToplevelaRl.grid_rowconfigure(0,weight=1)
 
     labelFrameARl=ttk.Labelframe(ToplevelaRl,text="Rule adding")
-    labelFrameARl.grid(column=0,row=3,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
-    labelFrameARl.grid(column=0,row=3,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+    labelFrameARl.grid(column=0,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+    labelFrameARl.grid(column=0,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
     labelFrameARl.grid_columnconfigure(0,weight=1)
-    labelFrameARl.grid_columnconfigure(1,weight=1)
+    labelFrameARl.grid_columnconfigure(1,weight=99)
     labelFrameARl.grid_rowconfigure(0,weight=1)
     labelFrameARl.grid_rowconfigure(1,weight=1)
     labelFrameARl.grid_rowconfigure(2,weight=1)
@@ -515,114 +525,133 @@ def aRlTLvl():
     labelFrameARl.grid_rowconfigure(16,weight=1)
     labelFrameARl.grid_rowconfigure(17,weight=1)
     labelFrameARl.grid_rowconfigure(18,weight=1)
+    labelFrameARl.grid_rowconfigure(19,weight=1)
+    labelFrameARl.grid_rowconfigure(20,weight=1)
+    labelFrameARl.grid_rowconfigure(21,weight=1)
+    labelFrameARl.grid_rowconfigure(22,weight=1)
 
-    labelActn=ttk.Label(labelFrameARl,text="Action:")
-    labelActn.grid(column=0,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
+    labelARlPpt=ttk.Label(labelFrameARl,text="(*) Must be filled out")
+    labelARlPpt.grid(column=0,row=0,columnspan=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+
+    separatorARlPpt=ttk.Separator(labelFrameARl)
+    separatorARlPpt.grid(column=0,row=1,columnspan=2,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+
+    labelActn=ttk.Label(labelFrameARl,text="(*)Action:")
+    labelActn.grid(column=0,row=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
     
     comboboxActn=ttk.Combobox(labelFrameARl,textvariable=actn,state="readonly")
     comboboxActn["values"]=("alert","log","activate","dynamic")
-    comboboxActn.grid(column=1,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.W)
+    comboboxActn.grid(column=1,row=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
     
-    labelProt=ttk.Label(labelFrameARl,text="Protocol:")
-    labelProt.grid(column=0,row=1,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
+    labelProt=ttk.Label(labelFrameARl,text="(*)Protocol:")
+    labelProt.grid(column=0,row=3,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
     
     comboboxProt=ttk.Combobox(labelFrameARl,textvariable=prot,state="readonly")
     comboboxProt["values"]=("tcp","icmp","udp","ip")
-    comboboxProt.grid(column=1,row=1,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.W)
+    comboboxProt.grid(column=1,row=3,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
     
-    labelSrcIPAdd=ttk.Label(labelFrameARl,text="Source IP Address:")
-    labelSrcIPAdd.grid(column=0,row=3,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
+    labelSrcIPAdd=ttk.Label(labelFrameARl,text="(*)Source IP Address:")
+    labelSrcIPAdd.grid(column=0,row=4,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
     
     comboboxSrcIPAdd=ttk.Combobox(labelFrameARl,textvariable=srcIPAdd)
     comboboxSrcIPAdd["values"]=("any","$HOME_NET","$EXTERNAL_NET","$DNS_SERVERS","$SMTP_SERVERS","$HTTP_SERVERS","$SQL_SERVERS","$TELNET_SERVERS","$SSH_SERVERS","$FTP_SERVERS","$SIP_SERVERS")
-    comboboxSrcIPAdd.grid(column=1,row=3,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.W)
+    comboboxSrcIPAdd.grid(column=1,row=4,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
     
-    labelSrcPtNo=ttk.Label(labelFrameARl,text="Source Port Number:")
-    labelSrcPtNo.grid(column=0,row=4,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
+    labelSrcPtNo=ttk.Label(labelFrameARl,text="(*)Source Port Number:")
+    labelSrcPtNo.grid(column=0,row=5,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
     
     comboboxSrcPtNo=ttk.Combobox(labelFrameARl,textvariable=srcPtNo)
     comboboxSrcPtNo["values"]=("any","$HTTP_PORTS","$SHELLCODE_PORTS","$ORACLE_PORTS","$SSH_PORTS","$FTP_PORTS","$SIP_PORTS","$FILE_DATA_PORTS","$GTP_PORTS")
-    comboboxSrcPtNo.grid(column=1,row=4,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.W)
+    comboboxSrcPtNo.grid(column=1,row=5,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
     
-    labelDirOpr=ttk.Label(labelFrameARl,text="Direction Operator:")
-    labelDirOpr.grid(column=0,row=5,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
+    labelDirOpr=ttk.Label(labelFrameARl,text="(*)Direction Operator:")
+    labelDirOpr.grid(column=0,row=6,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
     
     comboboxDirOpr=ttk.Combobox(labelFrameARl,textvariable=dirOpr,state="readonly")
     comboboxDirOpr["values"]=("->","<>")
-    comboboxDirOpr.grid(column=1,row=5,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.W)
+    comboboxDirOpr.grid(column=1,row=6,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
     
-    labelDestIPAdd=ttk.Label(labelFrameARl,text="Destination IP Address:")
-    labelDestIPAdd.grid(column=0,row=6,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
+    labelDestIPAdd=ttk.Label(labelFrameARl,text="(*)Destination IP Address:")
+    labelDestIPAdd.grid(column=0,row=7,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
     
     comboboxDestIPAdd=ttk.Combobox(labelFrameARl,textvariable=destIPAdd)
     comboboxDestIPAdd["values"]=("any","$HOME_NET","$EXTERNAL_NET","$DNS_SERVERS","$SMTP_SERVERS","$HTTP_SERVERS","$SQL_SERVERS","$TELNET_SERVERS","$SSH_SERVERS","$FTP_SERVERS","$SIP_SERVERS")
-    comboboxDestIPAdd.grid(column=1,row=6,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.W)
+    comboboxDestIPAdd.grid(column=1,row=7,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
     
-    labelDestPtNo=ttk.Label(labelFrameARl,text="Destination Port Number:")
-    labelDestPtNo.grid(column=0,row=7,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
+    labelDestPtNo=ttk.Label(labelFrameARl,text="(*)Destination Port Number:")
+    labelDestPtNo.grid(column=0,row=8,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
     
     comboboxDestPtNo=ttk.Combobox(labelFrameARl,textvariable=destPtNo)
     comboboxDestPtNo["values"]=("any","$HTTP_PORTS","$SHELLCODE_PORTS","$ORACLE_PORTS","$SSH_PORTS","$FTP_PORTS","$SIP_PORTS","$FILE_DATA_PORTS","$GTP_PORTS")
-    comboboxDestPtNo.grid(column=1,row=7,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.W)
+    comboboxDestPtNo.grid(column=1,row=8,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
-    separatorED=ttk.Separator(labelFrameARl)
-    separatorED.grid(column=0,row=8,columnspan=2,sticky=Tkinter.E+Tkinter.W)
+    separatorARl=ttk.Separator(labelFrameARl)
+    separatorARl.grid(column=0,row=9,columnspan=2,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
     
     labelMsg=ttk.Label(labelFrameARl,text="Message:")
-    labelMsg.grid(column=0,row=9,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
+    labelMsg.grid(column=0,row=10,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
     
     entryMsg=ttk.Entry(labelFrameARl,textvariable=msg)
-    entryMsg.grid(column=1,row=9,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.W)
+    entryMsg.grid(column=1,row=10,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
     
     labelRefIdSys=ttk.Label(labelFrameARl,text="Reference ID System:")
-    labelRefIdSys.grid(column=0,row=10,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
+    labelRefIdSys.grid(column=0,row=11,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
     
-    comboboxRefIdSys=ttk.Combobox(labelFrameARl,textvariable=refIdSys)
+    comboboxRefIdSys=ttk.Combobox(labelFrameARl,textvariable=refIdSys,state="readonly")
     comboboxRefIdSys["values"]=("bugtraq","cve","nessus","arachnids","mcafee","osvdb","msb","url")
-    comboboxRefIdSys.grid(column=1,row=10,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.W)
+    comboboxRefIdSys.grid(column=1,row=11,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
     
     labelRefId=ttk.Label(labelFrameARl,text="Reference ID:")
-    labelRefId.grid(column=0,row=11,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
+    labelRefId.grid(column=0,row=12,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
     
     entryRefId=ttk.Entry(labelFrameARl,textvariable=refId)
-    entryRefId.grid(column=1,row=11,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.W)
+    entryRefId.grid(column=1,row=12,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
     
-    labelGId=ttk.Label(labelFrameARl,text="GID:")
-    labelGId.grid(column=0,row=12,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
-    
+    labelGId=ttk.Label(labelFrameARl,text="(*)Generator Id:")
+    labelGId.grid(column=0,row=13,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
+
     entryGId=ttk.Entry(labelFrameARl,textvariable=gId)
-    entryGId.grid(column=1,row=12,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.W)
-    
-    labelSId=ttk.Label(labelFrameARl,text="SID:")
-    labelSId.grid(column=0,row=13,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
-    
+    entryGId.grid(column=1,row=13,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+
+    labelRevPpt=ttk.Label(labelFrameARl,text="Integer only. Generator ID is used to identify what part of Snort generates the event when a particular rule fires.")
+    labelRevPpt.grid(column=1,row=14,ipadx=5,padx=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+
+    labelSId=ttk.Label(labelFrameARl,text="(*)SID:")
+    labelSId.grid(column=0,row=15,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
+
     entrySId=ttk.Entry(labelFrameARl,textvariable=sId)
-    entrySId.grid(column=1,row=13,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.W)
+    entrySId.grid(column=1,row=15,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+
+    labelRevPpt=ttk.Label(labelFrameARl,text="Integer only. Sid is used to uniquely identify Snort rules.")
+    labelRevPpt.grid(column=1,row=16,ipadx=5,padx=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
     
-    labelRev=ttk.Label(labelFrameARl,text="Revision:")
-    labelRev.grid(column=0,row=14,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
+    labelRev=ttk.Label(labelFrameARl,text="(*)Revision:")
+    labelRev.grid(column=0,row=17,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
     
     entryRev=ttk.Entry(labelFrameARl,textvariable=rev)
-    entryRev.grid(column=1,row=14,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.W)
+    entryRev.grid(column=1,row=17,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+
+    labelRevPpt=ttk.Label(labelFrameARl,text="Integer only. Revision is used to uniquely identify revisions of Snort rules.")
+    labelRevPpt.grid(column=1,row=18,ipadx=5,padx=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
     
     labelClTp=ttk.Label(labelFrameARl,text="Class Type:")
-    labelClTp.grid(column=0,row=15,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
+    labelClTp.grid(column=0,row=19,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
     
-    comboboxClTp=ttk.Combobox(labelFrameARl,textvariable=clTp)
+    comboboxClTp=ttk.Combobox(labelFrameARl,textvariable=clTp,state="readonly")
     comboboxClTp["values"]=("attempted-admin","attempted-user","inappropriate-content","policy-violation","shellcode-detect","successful-admin","successful-user","trojan-activity","unsuccessful-user","web-application-attack","attempted-dos","attempted-recon","bad-unknown","default-login-attempt","denial-of-service","misc-attack","non-standard-protocol","rpc-portmap-decode","successful-dos","successful-recon-largescale","successful-recon-limited","suspicious-filename-detect","suspicious-login","system-call-detect","unusual-client-port-connection","web-application-activity","icmp-event","misc-activity","network-scan","not-suspicious","protocol-command-decode","string-detect","unknown","tcp-connection")
-    comboboxClTp.grid(column=1,row=15,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.W)
+    comboboxClTp.grid(column=1,row=19,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
     
     labelPri=ttk.Label(labelFrameARl,text="Priority:")
-    labelPri.grid(column=0,row=16,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
+    labelPri.grid(column=0,row=20,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
 
-    entryPri=ttk.Entry(labelFrameARl,textvariable=pri)
-    entryPri.grid(column=1,row=16,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.W)
+    comboboxPri=ttk.Combobox(labelFrameARl,textvariable=pri,values=["1","2","3","4"],state="readonly")
+    comboboxPri.grid(column=1,row=20,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
     separatorED=ttk.Separator(labelFrameARl)
-    separatorED.grid(column=0,row=17,columnspan=2,sticky=Tkinter.E+Tkinter.W)
+    separatorED.grid(column=0,row=21,columnspan=2,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
     buttonaddRl=ttk.Button(labelFrameARl,text="Add rule",command=addRl)
-    buttonaddRl.grid(column=0,row=18,columnspan=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+    buttonaddRl.grid(column=0,row=22,columnspan=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
 def edRlTLvl():
     ToplevelEdRl=Tkinter.Toplevel()
@@ -631,9 +660,9 @@ def edRlTLvl():
     ToplevelEdRl.grid_rowconfigure(0,weight=1)
     
     labelFrameEdRl=ttk.Labelframe(ToplevelEdRl,text="Rule editing")
-    labelFrameEdRl.grid(column=0,row=3,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+    labelFrameEdRl.grid(column=0,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
     labelFrameEdRl.grid_columnconfigure(0,weight=1)
-    labelFrameEdRl.grid_columnconfigure(1,weight=1)
+    labelFrameEdRl.grid_columnconfigure(1,weight=99)
     labelFrameEdRl.grid_rowconfigure(0,weight=1)
     labelFrameEdRl.grid_rowconfigure(1,weight=1)
     labelFrameEdRl.grid_rowconfigure(2,weight=1)
@@ -653,114 +682,133 @@ def edRlTLvl():
     labelFrameEdRl.grid_rowconfigure(16,weight=1)
     labelFrameEdRl.grid_rowconfigure(17,weight=1)
     labelFrameEdRl.grid_rowconfigure(18,weight=1)
+    labelFrameEdRl.grid_rowconfigure(19,weight=1)
+    labelFrameEdRl.grid_rowconfigure(20,weight=1)
+    labelFrameEdRl.grid_rowconfigure(21,weight=1)
+    labelFrameEdRl.grid_rowconfigure(22,weight=1)
+
+    labelEdRlPpt=ttk.Label(labelFrameEdRl,text="(*) Must be filled out")
+    labelEdRlPpt.grid(column=0,row=0,columnspan=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+
+    separatorEdRlPpt=ttk.Separator(labelFrameEdRl)
+    separatorEdRlPpt.grid(column=0,row=1,columnspan=2,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
     
-    labelEdActn=ttk.Label(labelFrameEdRl,text="Action:")
-    labelEdActn.grid(column=0,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
+    labelEdActn=ttk.Label(labelFrameEdRl,text="(*)Action:")
+    labelEdActn.grid(column=0,row=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
     
     comboboxEdActn=ttk.Combobox(labelFrameEdRl,textvariable=seledActn,state="readonly")
     comboboxEdActn["values"]=("alert","log","activate","dynamic")
-    comboboxEdActn.grid(column=1,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.W)
+    comboboxEdActn.grid(column=1,row=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
     
-    labelEdProt=ttk.Label(labelFrameEdRl,text="Protocol:")
-    labelEdProt.grid(column=0,row=1,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
+    labelEdProt=ttk.Label(labelFrameEdRl,text="(*)Protocol:")
+    labelEdProt.grid(column=0,row=3,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
     
     comboboxEdProt=ttk.Combobox(labelFrameEdRl,textvariable=seledProt,state="readonly")
     comboboxEdProt["values"]=("tcp","icmp","udp","ip")
-    comboboxEdProt.grid(column=1,row=1,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.W)
+    comboboxEdProt.grid(column=1,row=3,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
     
-    labelEdSrcIPAdd=ttk.Label(labelFrameEdRl,text="Source IP Address:")
-    labelEdSrcIPAdd.grid(column=0,row=3,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
+    labelEdSrcIPAdd=ttk.Label(labelFrameEdRl,text="(*)Source IP Address:")
+    labelEdSrcIPAdd.grid(column=0,row=4,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
     
     comboboxEdSrcIPAdd=ttk.Combobox(labelFrameEdRl,textvariable=seledSrcIPAdd)
     comboboxEdSrcIPAdd["values"]=("any","$HOME_NET","$EXTERNAL_NET","$DNS_SERVERS","$SMTP_SERVERS","$HTTP_SERVERS","$SQL_SERVERS","$TELNET_SERVERS","$SSH_SERVERS","$FTP_SERVERS","$SIP_SERVERS")
-    comboboxEdSrcIPAdd.grid(column=1,row=3,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.W)
+    comboboxEdSrcIPAdd.grid(column=1,row=4,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
     
-    labelEdSrcPtNo=ttk.Label(labelFrameEdRl,text="Source Port Number:")
-    labelEdSrcPtNo.grid(column=0,row=4,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
+    labelEdSrcPtNo=ttk.Label(labelFrameEdRl,text="(*)Source Port Number:")
+    labelEdSrcPtNo.grid(column=0,row=5,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
     
     comboboxEdSrcPtNo=ttk.Combobox(labelFrameEdRl,textvariable=seledSrcPtNo)
     comboboxEdSrcPtNo["values"]=("any","$HTTP_PORTS","$SHELLCODE_PORTS","$ORACLE_PORTS","$SSH_PORTS","$FTP_PORTS","$SIP_PORTS","$FILE_DATA_PORTS","$GTP_PORTS")
-    comboboxEdSrcPtNo.grid(column=1,row=4,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.W)
+    comboboxEdSrcPtNo.grid(column=1,row=5,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
     
-    labelEdDirOpr=ttk.Label(labelFrameEdRl,text="Direction Operator:")
-    labelEdDirOpr.grid(column=0,row=5,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
+    labelEdDirOpr=ttk.Label(labelFrameEdRl,text="(*)Direction Operator:")
+    labelEdDirOpr.grid(column=0,row=6,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
     
     comboboxEdDirOpr=ttk.Combobox(labelFrameEdRl,textvariable=seledDirOpr,state="readonly")
     comboboxEdDirOpr["values"]=("->","<>")
-    comboboxEdDirOpr.grid(column=1,row=5,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.W)
+    comboboxEdDirOpr.grid(column=1,row=6,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
     
-    labelEdDestIPAdd=ttk.Label(labelFrameEdRl,text="Destination IP Address:")
-    labelEdDestIPAdd.grid(column=0,row=6,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
+    labelEdDestIPAdd=ttk.Label(labelFrameEdRl,text="(*)Destination IP Address:")
+    labelEdDestIPAdd.grid(column=0,row=7,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
     
     comboboxEdDestIPAdd=ttk.Combobox(labelFrameEdRl,textvariable=seledDestIPAdd)
     comboboxEdDestIPAdd["values"]=("any","$HOME_NET","$EXTERNAL_NET","$DNS_SERVERS","$SMTP_SERVERS","$HTTP_SERVERS","$SQL_SERVERS","$TELNET_SERVERS","$SSH_SERVERS","$FTP_SERVERS","$SIP_SERVERS")
-    comboboxEdDestIPAdd.grid(column=1,row=6,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.W)
+    comboboxEdDestIPAdd.grid(column=1,row=7,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
     
-    labelEdDestPtNo=ttk.Label(labelFrameEdRl,text="Destination Port Number:")
-    labelEdDestPtNo.grid(column=0,row=7,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
+    labelEdDestPtNo=ttk.Label(labelFrameEdRl,text="(*)Destination Port Number:")
+    labelEdDestPtNo.grid(column=0,row=8,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
     
     comboboxEdDestPtNo=ttk.Combobox(labelFrameEdRl,textvariable=seledDestPtNo)
     comboboxEdDestPtNo["values"]=("any","$HTTP_PORTS","$SHELLCODE_PORTS","$ORACLE_PORTS","$SSH_PORTS","$FTP_PORTS","$SIP_PORTS","$FILE_DATA_PORTS","$GTP_PORTS")
-    comboboxEdDestPtNo.grid(column=1,row=7,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.W)
+    comboboxEdDestPtNo.grid(column=1,row=8,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
-    separatorEd=ttk.Separator(labelFrameEdRl)
-    separatorEd.grid(column=0,row=8,columnspan=2,sticky=Tkinter.E+Tkinter.W)
+    separatorEdRl=ttk.Separator(labelFrameEdRl)
+    separatorEdRl.grid(column=0,row=9,columnspan=2,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
     
     labelEdMsg=ttk.Label(labelFrameEdRl,text="Message:")
-    labelEdMsg.grid(column=0,row=9,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
+    labelEdMsg.grid(column=0,row=10,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
     
     entryEdMsg=ttk.Entry(labelFrameEdRl,textvariable=seledMsg)
-    entryEdMsg.grid(column=1,row=9,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.W)
+    entryEdMsg.grid(column=1,row=10,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
     
     labelEdRefIdSys=ttk.Label(labelFrameEdRl,text="Reference ID System:")
-    labelEdRefIdSys.grid(column=0,row=10,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
+    labelEdRefIdSys.grid(column=0,row=11,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
     
-    comboboxEdRefIdSys=ttk.Combobox(labelFrameEdRl,textvariable=seledRefIdSys)
+    comboboxEdRefIdSys=ttk.Combobox(labelFrameEdRl,textvariable=seledRefIdSys,state="readonly")
     comboboxEdRefIdSys["values"]=("bugtraq","cve","nessus","arachnids","mcafee","osvdb","msb","url")
-    comboboxEdRefIdSys.grid(column=1,row=10,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.W)
+    comboboxEdRefIdSys.grid(column=1,row=11,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
     
     labelEdRefId=ttk.Label(labelFrameEdRl,text="Reference ID:")
-    labelEdRefId.grid(column=0,row=11,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
+    labelEdRefId.grid(column=0,row=12,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
     
     entryEdRefId=ttk.Entry(labelFrameEdRl,textvariable=seledRefId)
-    entryEdRefId.grid(column=1,row=11,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.W)
+    entryEdRefId.grid(column=1,row=12,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
     
-    labelEdGId=ttk.Label(labelFrameEdRl,text="GID:")
-    labelEdGId.grid(column=0,row=12,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
+    labelEdGId=ttk.Label(labelFrameEdRl,text="(*)GID:")
+    labelEdGId.grid(column=0,row=13,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
     
     entryEdGId=ttk.Entry(labelFrameEdRl,textvariable=seledGId)
-    entryEdGId.grid(column=1,row=12,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.W)
+    entryEdGId.grid(column=1,row=13,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+
+    labelEdRevPpt=ttk.Label(labelFrameEdRl,text="Integer only. Generator ID is used to identify what part of Snort generates the event when a particular rule fires.")
+    labelEdRevPpt.grid(column=1,row=14,ipadx=5,padx=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
     
-    labelEdSId=ttk.Label(labelFrameEdRl,text="SID:")
-    labelEdSId.grid(column=0,row=13,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
+    labelEdSId=ttk.Label(labelFrameEdRl,text="(*)SID:")
+    labelEdSId.grid(column=0,row=15,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
     
     entryEdSId=ttk.Entry(labelFrameEdRl,textvariable=seledSId)
-    entryEdSId.grid(column=1,row=13,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.W)
+    entryEdSId.grid(column=1,row=15,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+
+    labelEdRevPpt=ttk.Label(labelFrameEdRl,text="Integer only. Sid is used to uniquely identify Snort rules.")
+    labelEdRevPpt.grid(column=1,row=16,ipadx=5,padx=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
     
-    labelEdRev=ttk.Label(labelFrameEdRl,text="Revision:")
-    labelEdRev.grid(column=0,row=14,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
+    labelEdRev=ttk.Label(labelFrameEdRl,text="(*)Revision:")
+    labelEdRev.grid(column=0,row=17,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
     
     entryEdRev=ttk.Entry(labelFrameEdRl,textvariable=seledRev)
-    entryEdRev.grid(column=1,row=14,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.W)
+    entryEdRev.grid(column=1,row=17,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+
+    labelEdRevPpt=ttk.Label(labelFrameEdRl,text="Integer only. Revision is used to uniquely identify revisions of Snort rules.")
+    labelEdRevPpt.grid(column=1,row=18,ipadx=5,padx=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
     
     labelEdClTp=ttk.Label(labelFrameEdRl,text="Class Type:")
-    labelEdClTp.grid(column=0,row=15,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
+    labelEdClTp.grid(column=0,row=19,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
     
-    comboboxEdClTp=ttk.Combobox(labelFrameEdRl,textvariable=seledClTp)
+    comboboxEdClTp=ttk.Combobox(labelFrameEdRl,textvariable=seledClTp,state="readonly")
     comboboxEdClTp["values"]=("attempted-admin","attempted-user","inappropriate-content","policy-violation","shellcode-detect","successful-admin","successful-user","trojan-activity","unsuccessful-user","web-application-attack","attempted-dos","attempted-recon","bad-unknown","default-login-attempt","denial-of-service","misc-attack","non-standard-protocol","rpc-portmap-decode","successful-dos","successful-recon-largescale","successful-recon-limited","suspicious-filename-detect","suspicious-login","system-call-detect","unusual-client-port-connection","web-application-activity","icmp-event","misc-activity","network-scan","not-suspicious","protocol-command-decode","string-detect","unknown","tcp-connection")
-    comboboxEdClTp.grid(column=1,row=15,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.W)
+    comboboxEdClTp.grid(column=1,row=19,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
     
     labelEdPri=ttk.Label(labelFrameEdRl,text="Priority:")
-    labelEdPri.grid(column=0,row=16,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
+    labelEdPri.grid(column=0,row=20,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
 
-    entryEdPri=ttk.Entry(labelFrameEdRl,textvariable=seledPri)
-    entryEdPri.grid(column=1,row=16,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.W)
+    comboboxEdPri=ttk.Combobox(labelFrameEdRl,textvariable=seledPri,values=["1","2","3","4"],state="readonly")
+    comboboxEdPri.grid(column=1,row=20,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
     separatorEd=ttk.Separator(labelFrameEdRl)
-    separatorEd.grid(column=0,row=17,columnspan=2,sticky=Tkinter.E+Tkinter.W)
+    separatorEd.grid(column=0,row=21,columnspan=2,sticky=Tkinter.E+Tkinter.W)
 
     buttonEdRl=ttk.Button(labelFrameEdRl,text="Edit rule",command=edRl)
-    buttonEdRl.grid(column=0,row=18,columnspan=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+    buttonEdRl.grid(column=0,row=22,columnspan=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
 def edRl():
     global seledRlLnNo
@@ -1333,9 +1381,9 @@ destPtNo=Tkinter.StringVar()
 msg=Tkinter.StringVar()
 refIdSys=Tkinter.StringVar()
 refId=Tkinter.StringVar()
-gId=Tkinter.StringVar()
-sId=Tkinter.StringVar()
-rev=Tkinter.StringVar()
+gId=Tkinter.StringVar(value="1000000")
+sId=Tkinter.StringVar(value="1000000")
+rev=Tkinter.StringVar(value="1")
 clTp=Tkinter.StringVar()
 pri=Tkinter.StringVar()
 
@@ -1473,7 +1521,7 @@ labelFrameBarnyardStat.grid_rowconfigure(4,weight=1)
 labelFrameBarnyardStat.grid_rowconfigure(5,weight=1)
 labelFrameBarnyardStat.grid_rowconfigure(6,weight=1)
 
-labelBarnyardSvcStat=ttk.Label(labelFrameBarnyardStat,text="Barnyard service status:")
+labelBarnyardSvcStat=ttk.Label(labelFrameBarnyardStat,text="Barnyard service startup type:")
 labelBarnyardSvcStat.grid(column=0,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
 
 labelStatBarnyardIsEnaOut=ttk.Label(labelFrameBarnyardStat)
@@ -1520,6 +1568,8 @@ labelFrameSetting.grid_rowconfigure(5,weight=1)
 labelFrameSetting.grid_rowconfigure(6,weight=1)
 labelFrameSetting.grid_rowconfigure(7,weight=1)
 labelFrameSetting.grid_rowconfigure(8,weight=1)
+labelFrameSetting.grid_rowconfigure(9,weight=1)
+labelFrameSetting.grid_rowconfigure(10,weight=1)
 
 labelAppLoc=ttk.Label(labelFrameSetting,text="Snort application:")
 labelAppLoc.grid(column=0,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
@@ -1551,26 +1601,35 @@ labelUsr.grid(column=0,row=3,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
 entryUsr=ttk.Combobox(labelFrameSetting,textvariable=execUsr,values=usrLs(),state="readonly")
 entryUsr.grid(column=1,row=3,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
+labelUsrPpt=ttk.Label(labelFrameSetting,text="Select the Snort dedicated user account that was created during installation.")
+labelUsrPpt.grid(column=1,row=4,ipadx=5,padx=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+
 labelGrp=ttk.Label(labelFrameSetting,text="Executive group:")
-labelGrp.grid(column=0,row=4,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
+labelGrp.grid(column=0,row=5,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
 
 entryGrp=ttk.Combobox(labelFrameSetting,textvariable=execGrp,values=grpLs(),state="readonly")
-entryGrp.grid(column=1,row=4,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+entryGrp.grid(column=1,row=5,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
-separatorSetting=ttk.Separator(labelFrameSetting)
-separatorSetting.grid(column=0,row=5,columnspan=3,sticky=Tkinter.E+Tkinter.W)
+labelGrp=ttk.Label(labelFrameSetting,text="Executive group:")
+labelGrp.grid(column=0,row=5,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
 
-labelQtOpOpt=ttk.Label(labelFrameSetting,text="Quiet operation option:")
-labelQtOpOpt.grid(column=0,row=6,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
-
-checkButtonQtOp=ttk.Checkbutton(labelFrameSetting,variable=optQtOp,text="Do not log banner and initialization information to syslog")
-checkButtonQtOp.grid(column=1,row=6,columnspan=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.W)
+labelUsrPpt=ttk.Label(labelFrameSetting,text="Select the Snort dedicated group that was created during installation.")
+labelUsrPpt.grid(column=1,row=6,ipadx=5,padx=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
 separatorSetting=ttk.Separator(labelFrameSetting)
 separatorSetting.grid(column=0,row=7,columnspan=3,sticky=Tkinter.E+Tkinter.W)
 
+labelQtOpOpt=ttk.Label(labelFrameSetting,text="Quiet operation option:")
+labelQtOpOpt.grid(column=0,row=8,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
+
+checkButtonQtOp=ttk.Checkbutton(labelFrameSetting,variable=optQtOp,text="Do not log banner and initialization information to syslog")
+checkButtonQtOp.grid(column=1,row=8,columnspan=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.W)
+
+separatorSetting=ttk.Separator(labelFrameSetting)
+separatorSetting.grid(column=0,row=9,columnspan=3,sticky=Tkinter.E+Tkinter.W)
+
 buttonSv=ttk.Button(labelFrameSetting,text="Save configuration",command=svSvcCfg)
-buttonSv.grid(column=0,row=8,columnspan=3,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E+Tkinter.W)
+buttonSv.grid(column=0,row=10,columnspan=3,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E+Tkinter.W)
 
 frameCfg=ttk.Frame(noteBookMain)
 frameCfg.grid(column=0,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
@@ -1620,6 +1679,16 @@ labelFrameNetVar.grid_rowconfigure(12,weight=1)
 labelFrameNetVar.grid_rowconfigure(13,weight=1)
 labelFrameNetVar.grid_rowconfigure(14,weight=1)
 labelFrameNetVar.grid_rowconfigure(15,weight=1)
+labelFrameNetVar.grid_rowconfigure(16,weight=1)
+labelFrameNetVar.grid_rowconfigure(17,weight=1)
+labelFrameNetVar.grid_rowconfigure(18,weight=1)
+labelFrameNetVar.grid_rowconfigure(19,weight=1)
+labelFrameNetVar.grid_rowconfigure(20,weight=1)
+labelFrameNetVar.grid_rowconfigure(21,weight=1)
+labelFrameNetVar.grid_rowconfigure(22,weight=1)
+labelFrameNetVar.grid_rowconfigure(23,weight=1)
+labelFrameNetVar.grid_rowconfigure(24,weight=1)
+labelFrameNetVar.grid_rowconfigure(25,weight=1)
 
 labelIPPptH=ttk.Label(labelFrameNetVar,text="IP network example:")
 labelIPPptH.grid(column=0,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S)
@@ -1637,7 +1706,7 @@ labelIPPptE.grid(column=1,row=1,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+T
 #buttonVLog.grid(column=2,row=0,rowspan=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
 separatorNetVarPpt=ttk.Separator(labelFrameNetVar)
-separatorNetVarPpt.grid(column=0,row=2,columnspan=3,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+separatorNetVarPpt.grid(column=0,row=2,columnspan=3,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
 labelHomeNet=ttk.Label(labelFrameNetVar,text="Home network address:")
 labelHomeNet.grid(column=0,row=3,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
@@ -1645,68 +1714,98 @@ labelHomeNet.grid(column=0,row=3,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
 comboBoxHomeNet=ttk.Combobox(labelFrameNetVar,textvariable=homeNetAdd,values=["10.0.0.0/8","172.16.0.0/12","192.168.0.0/16","10.0.0.0/24","192.168.1.0/24"])
 comboBoxHomeNet.grid(column=1,row=3,columnspan=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
+labelHomeNetPpt=ttk.Label(labelFrameNetVar,text="Corresponding to the variable $HOME_NET.")
+labelHomeNetPpt.grid(column=1,row=4,ipadx=5,padx=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+
 labelExtNet=ttk.Label(labelFrameNetVar,text="External network address:")
-labelExtNet.grid(column=0,row=4,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
+labelExtNet.grid(column=0,row=5,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
 
 entryExtNet=ttk.Entry(labelFrameNetVar,textvariable=extNetAdd,state="readonly")
-entryExtNet.grid(column=1,row=4,columnspan=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+entryExtNet.grid(column=1,row=5,columnspan=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+
+labelExtNetPpt=ttk.Label(labelFrameNetVar,text="Corresponding to the variable $EXTERNAL_NET.")
+labelExtNetPpt.grid(column=1,row=6,ipadx=5,padx=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
 separatorNetVarNet=ttk.Separator(labelFrameNetVar)
-separatorNetVarNet.grid(column=0,row=5,columnspan=3,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+separatorNetVarNet.grid(column=0,row=7,columnspan=3,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
 labelDNSS=ttk.Label(labelFrameNetVar,text="DNS server IP address:")
-labelDNSS.grid(column=0,row=6,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
+labelDNSS.grid(column=0,row=8,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
 
 comboBoxDNSS=ttk.Entry(labelFrameNetVar,textvariable=dnsSIpAdd)
-comboBoxDNSS.grid(column=1,row=6,columnspan=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+comboBoxDNSS.grid(column=1,row=8,columnspan=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+
+labelDNSSPpt=ttk.Label(labelFrameNetVar,text="Corresponding to the variable $DNS_SERVERS.")
+labelDNSSPpt.grid(column=1,row=9,ipadx=5,padx=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
 labelSMTPS=ttk.Label(labelFrameNetVar,text="SMTP server IP address:")
-labelSMTPS.grid(column=0,row=7,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
+labelSMTPS.grid(column=0,row=10,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
 
 comboBoxSMTPS=ttk.Entry(labelFrameNetVar,textvariable=smtpSAdd)
-comboBoxSMTPS.grid(column=1,row=7,columnspan=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+comboBoxSMTPS.grid(column=1,row=10,columnspan=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+
+labelSMTPSPpt=ttk.Label(labelFrameNetVar,text="Corresponding to the variable $SMTP_SERVERS.")
+labelSMTPSPpt.grid(column=1,row=11,ipadx=5,padx=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
 labelHTTPS=ttk.Label(labelFrameNetVar,text="HTTP server IP address:")
-labelHTTPS.grid(column=0,row=8,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
+labelHTTPS.grid(column=0,row=12,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
 
 comboBoxHTTPS=ttk.Entry(labelFrameNetVar,textvariable=httpSAdd)
-comboBoxHTTPS.grid(column=1,row=8,columnspan=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+comboBoxHTTPS.grid(column=1,row=12,columnspan=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+
+labelHTTPSPpt=ttk.Label(labelFrameNetVar,text="Corresponding to the variable $HTTP_SERVERS.")
+labelHTTPSPpt.grid(column=1,row=13,ipadx=5,padx=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
 labelSQLS=ttk.Label(labelFrameNetVar,text="SQL server IP address:")
-labelSQLS.grid(column=0,row=9,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
+labelSQLS.grid(column=0,row=14,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
 
 comboBoxSQLS=ttk.Entry(labelFrameNetVar,textvariable=sqlSAdd)
-comboBoxSQLS.grid(column=1,row=9,columnspan=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+comboBoxSQLS.grid(column=1,row=14,columnspan=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+
+labelSQLSPpt=ttk.Label(labelFrameNetVar,text="Corresponding to the variable $SQL_SERVERS.")
+labelSQLSPpt.grid(column=1,row=15,ipadx=5,padx=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
 labelTelnetS=ttk.Label(labelFrameNetVar,text="Telnet server IP address:")
-labelTelnetS.grid(column=0,row=10,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
+labelTelnetS.grid(column=0,row=16,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
 
 comboBoxTelnetS=ttk.Entry(labelFrameNetVar,textvariable=telnetSAdd)
-comboBoxTelnetS.grid(column=1,row=10,columnspan=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+comboBoxTelnetS.grid(column=1,row=16,columnspan=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+
+labelTelnetSPpt=ttk.Label(labelFrameNetVar,text="Corresponding to the variable $TELNET_SERVERS.")
+labelTelnetSPpt.grid(column=1,row=17,ipadx=5,padx=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
 labelSSHS=ttk.Label(labelFrameNetVar,text="SSH server IP address:")
-labelSSHS.grid(column=0,row=11,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
+labelSSHS.grid(column=0,row=18,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
 
 comboBoxSSHS=ttk.Entry(labelFrameNetVar,textvariable=sshSAdd)
-comboBoxSSHS.grid(column=1,row=11,columnspan=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+comboBoxSSHS.grid(column=1,row=18,columnspan=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+
+labelSSHSPpt=ttk.Label(labelFrameNetVar,text="Corresponding to the variable $SSH_SERVERS.")
+labelSSHSPpt.grid(column=1,row=19,ipadx=5,padx=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
 labelFTPS=ttk.Label(labelFrameNetVar,text="FTP server IP address:")
-labelFTPS.grid(column=0,row=12,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
+labelFTPS.grid(column=0,row=20,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
 
 comboBoxFTPS=ttk.Entry(labelFrameNetVar,textvariable=ftpSAdd)
-comboBoxFTPS.grid(column=1,row=12,columnspan=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+comboBoxFTPS.grid(column=1,row=20,columnspan=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+
+labelFTPSPpt=ttk.Label(labelFrameNetVar,text="Corresponding to the variable $FTP_SERVERS.")
+labelFTPSPpt.grid(column=1,row=21,ipadx=5,padx=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
 labelSIPS=ttk.Label(labelFrameNetVar,text="SIP server IP address:")
-labelSIPS.grid(column=0,row=13,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
+labelSIPS.grid(column=0,row=22,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
 
 comboBoxSIPS=ttk.Entry(labelFrameNetVar,textvariable=sipSAdd)
-comboBoxSIPS.grid(column=1,row=13,columnspan=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+comboBoxSIPS.grid(column=1,row=22,columnspan=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+
+labelSIPSPpt=ttk.Label(labelFrameNetVar,text="Corresponding to the variable $SIP_SERVERS.")
+labelSIPSPpt.grid(column=1,row=23,ipadx=5,padx=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
 separatorNetVarS=ttk.Separator(labelFrameNetVar)
-separatorNetVarS.grid(column=0,row=14,columnspan=3,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+separatorNetVarS.grid(column=0,row=24,columnspan=3,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
 buttonSvNetVar=ttk.Button(labelFrameNetVar,text="Save configuration",command=svNetVar)
-buttonSvNetVar.grid(column=0,row=15,columnspan=3,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
+buttonSvNetVar.grid(column=0,row=25,columnspan=3,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
 frameRl=ttk.Frame(noteBookMain)
 frameRl.grid(column=0,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
@@ -1824,19 +1923,19 @@ labelFrameAlertLogE.grid_columnconfigure(0,weight=1)
 labelFrameAlertLogE.grid_rowconfigure(0,weight=1)
 
 treeviewAlert=ttk.Treeview(labelFrameAlertLogE,columns=["sid","cid","signature","sig_name","timestamp","ip_src","ip_dst","ip_proto"],selectmode="browse",show="headings")
-treeviewAlert.heading("sid",text="SID")
+treeviewAlert.heading("sid",text="Sensor ID")
 treeviewAlert.column("sid",width=30)
-treeviewAlert.heading("cid",text="CID")
+treeviewAlert.heading("cid",text="Event ID")
 treeviewAlert.column("cid",width=50)
-treeviewAlert.heading("signature",text="Signature")
+treeviewAlert.heading("signature",text="Signature ID")
 treeviewAlert.column("signature",width=30)
-treeviewAlert.heading("sig_name",text="Signature Name")
+treeviewAlert.heading("sig_name",text="Signature name")
 treeviewAlert.column("sig_name",width=200)
 treeviewAlert.heading("timestamp",text="Timestamp")
 treeviewAlert.column("timestamp",width=190)
-treeviewAlert.heading("ip_src",text="Source Address")
+treeviewAlert.heading("ip_src",text="Source IP address")
 treeviewAlert.column("ip_src",width=150)
-treeviewAlert.heading("ip_dst",text="Destination Address")
+treeviewAlert.heading("ip_dst",text="Destination IP address")
 treeviewAlert.column("ip_dst",width=150)
 treeviewAlert.heading("ip_proto",text="Protocol")
 treeviewAlert.column("ip_proto",width=40)
@@ -1900,13 +1999,13 @@ labelFrameFilter.grid_rowconfigure(3,weight=1)
 labelFrameFilter.grid_rowconfigure(4,weight=1)
 labelFrameFilter.grid_rowconfigure(5,weight=1)
 
-labellssid=ttk.Label(labelFrameFilter,text="SID:")
+labellssid=ttk.Label(labelFrameFilter,text="Sensor ID:")
 labellssid.grid(column=0,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S)
 
 entrylssid=ttk.Entry(labelFrameFilter,textvariable=lssid)
 entrylssid.grid(column=1,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
-labellssignature=ttk.Label(labelFrameFilter,text="Signature:")
+labellssignature=ttk.Label(labelFrameFilter,text="Signature ID:")
 labellssignature.grid(column=2,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S)
 
 entrylssignature=ttk.Entry(labelFrameFilter,textvariable=lssignature)
@@ -2168,10 +2267,10 @@ noteBookMain.add(frameAbt,text="About")
 
 loadSvcCfg()
 acidtable()
-shwAlert()
 rRlF()
 loadCfg()
 loadPulledPorkcfg()
+lsAlert7hours()
 rLastRlsetUdTm()
 shwSnortVer()
 shwBarnyardVer()
