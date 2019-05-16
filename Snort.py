@@ -1473,7 +1473,7 @@ labelFrameBarnyardStat.grid_rowconfigure(4,weight=1)
 labelFrameBarnyardStat.grid_rowconfigure(5,weight=1)
 labelFrameBarnyardStat.grid_rowconfigure(6,weight=1)
 
-labelBarnyardSvcStat=ttk.Label(labelFrameBarnyardStat,text="Barnyard service status:")
+labelBarnyardSvcStat=ttk.Label(labelFrameBarnyardStat,text="Barnyard service startup type:")
 labelBarnyardSvcStat.grid(column=0,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.E)
 
 labelStatBarnyardIsEnaOut=ttk.Label(labelFrameBarnyardStat)
