@@ -1,10 +1,9 @@
+#!/usr/bin/python
 import ConfigParser
 import datetime
 import fileinput
 import grp
 import ipaddress
-#import matplotlib.pyplot
-#import matplotlib.cbook
 import MySQLdb
 import netifaces
 import os
@@ -164,16 +163,6 @@ def restatAllSvc():
     stdout,stderr=reStrtSnortSvcO.communicate()
     if reStrtSnortSvcO.returncode != 0:
         tkMessageBox.showerror("Error",stderr)
-
-    #stSnortSvc=subprocess.Popen("sudo systemctl stop snort.service",shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-    #stSnortSvcStdOut,stSnortSvcStdErr=stSnortSvc.communicate()
-    #if stSnortSvc.returncode != 0:
-        #tkMessageBox.showerror("Error",stSnortSvcStdErr)
-    
-    #strtSnortSvc=subprocess.Popen("sudo systemctl start snort.service",shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-    #strtSnortSvcStdOut,strtSnortSvcStdErr=strtSnortSvc.communicate()
-    #if strtSnortSvc.returncode != 0:
-        #tkMessageBox.showerror("Error",strtSnortSvcStdErr)
 
     uDSigMsgMap=subprocess.Popen("sudo pulledpork.pl -c /etc/snort/pulledpork.conf -l -n -P",shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
     PulledPorkStdOut,PulledPorkStdErr=uDSigMsgMap.communicate()
@@ -1140,23 +1129,6 @@ def lsAlertFilter():
     for row in data:
         treeviewAlert.insert("","end",values = row)
 
-#def mysql_graph():
-#    connection=MySQLdb.connect(host="localhost",user="snort",passwd="MySqlSNORTpassword",db="snort")
-#    cursor=connection.cursor()
-#    sql="SELECT * FROM event"
-#    cursor.execute(sql)
-#    data=cursor.fetchall()
-#    df=pandas.DataFrame(list(data),columns=["sid","cid","signature","timestamp"])
-#    w=df.sid
-#    x=df.cid
-#    y=df.signature
-#    z=df.timestamp
-#    matplotlib.pyplot.title("Signature event happen time",fontsize=24)
-#    matplotlib.pyplot.scatter(w,x,y,z)
-#    matplotlib.pyplot.xlabel("SID")
-#    matplotlib.pyplot.ylabel("CID")
-#    matplotlib.pyplot.tick_params(axis="both",which="major",labelsize=14)
-
 def loadPulledPorkcfg():
     try:
         with open("/etc/snort/pulledpork.conf","r") as rF:
@@ -1310,7 +1282,6 @@ def shwSnortVer():
     labelFrameSnortInfoOut.config(text=stdout)
 
 def oSnortOWeb():
-    #webbrowser.open("https://www.snort.org/")
     root.clipboard_clear()
     root.clipboard_append("https://www.snort.org/")
     tkMessageBox.showinfo("Information","The URL has been copied to the clipboard.")
@@ -1321,19 +1292,16 @@ def shwBarnyardVer():
     labelFrameBarnyardInfoOut.config(text=stdout)
 
 def oBarnyardOWeb():
-    #webbrowser.open("https://www.securixlive.com/")
     root.clipboard_clear()
     root.clipboard_append("https://www.securixlive.com/")
     tkMessageBox.showinfo("Information","The URL has been copied to the clipboard.")
     
 def oBarnyardGHWeb():
-    #webbrowser.open("https://github.com/firnsy/barnyard2/")
     root.clipboard_clear()
     root.clipboard_append("https://github.com/firnsy/barnyard2/")
     tkMessageBox.showinfo("Information","The URL has been copied to the clipboard.")
 
 def oBarnyardOEMail():
-    #webbrowser.open("mailto:firnsy@securixlive.com")
     root.clipboard_clear()
     root.clipboard_append("firnsy@securixlive.com")
     tkMessageBox.showinfo("Information","The email address has been copied to the clipboard.")
@@ -1344,7 +1312,6 @@ def shwPulledPorkVer():
     labelPulledPorkInfoOut.config(text=stdout)
 
 def oPulledPorkGHWeb():
-    #webbrowser.open("https://github.com/shirkdog/pulledpork/")
     root.clipboard_clear()
     root.clipboard_append("https://github.com/shirkdog/pulledpork/")
     tkMessageBox.showinfo("Information","The URL has been copied to the clipboard.")
@@ -1701,9 +1668,6 @@ labelIPPptH.grid(column=0,row=1,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+T
 
 labelIPPptE=ttk.Label(labelFrameNetVar,text="192.168.1.1")
 labelIPPptE.grid(column=1,row=1,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
-
-#buttonVLog=ttk.Button(labelFrameNetVar,text="Help",command=netVarHelpTLvl)
-#buttonVLog.grid(column=2,row=0,rowspan=2,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
 separatorNetVarPpt=ttk.Separator(labelFrameNetVar)
 separatorNetVarPpt.grid(column=0,row=2,columnspan=3,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
@@ -2062,18 +2026,6 @@ entrylsedated.grid(column=3,row=3,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N
 buttonlsAlertFilter=ttk.Button(labelFrameFilter,text="Filter",command=lsAlertFilter)
 buttonlsAlertFilter.grid(column=0,row=4,columnspan=6,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 
-#frameGraph=ttk.Frame(noteBookMain)
-
-#labelFrameGraph=ttk.Labelframe(frameGraph,text="Graph alert data")
-#labelFrameGraph.grid(column=0,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
-
-#mysql_graph()
-#matplotlib.pyplot.savefig("graph.png")
-#img=PIL.Image.open("graph.png")
-#graph=PIL.ImageTk.PhotoImage(img)
-#graphlabel=Tkinter.Label(labelFrameGraph,image=graph)
-#graphlabel.grid(column=0,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
-
 frameUd=ttk.Frame(noteBookMain)
 frameUd.grid(column=0,row=0,ipadx=5,ipady=5,padx=5,pady=5,sticky=Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W)
 frameUd.grid_columnconfigure(0,weight=1)
@@ -2261,7 +2213,6 @@ noteBookMain.add(frameHome,text="Home")
 noteBookMain.add(frameCfg,text="Configuration")
 noteBookMain.add(frameRl,text="Rule")
 noteBookMain.add(frameAlert,text="Alert")
-#noteBookMain.add(frameGraph,text="Graph")
 noteBookMain.add(frameUd,text="Update")
 noteBookMain.add(frameAbt,text="About")
 
