@@ -7,7 +7,6 @@ import ipaddress
 import MySQLdb
 import netifaces
 import os
-import pandas
 import PIL.Image
 import PIL.ImageTk
 import pwd
@@ -20,7 +19,6 @@ import Tkinter
 import tkFileDialog
 import tkMessageBox
 import ttk
-import webbrowser
 
 global seledRlLnNo
 seledRlLnNo=0
